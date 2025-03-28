@@ -1,7 +1,9 @@
-/* 28 March 2025
-* Samoei Oloo
-* Specno Technical Assessment
- */
+// Package auth
+// Author: Samoei Oloo
+// Created: 2025-03-28
+// License: None
+//
+// This script is responsible for JWT generation
 package auth
 
 import "errors"
