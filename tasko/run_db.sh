@@ -6,13 +6,10 @@
 # This script sets up a PostgreSQL container and applies migrations
 # using SQL files located in the database directory.
 
-DB_CONTAINER_NAME="specno-db"
-DB_USER="postgres"
-DB_PASSWORD="password"
-DB_NAME="mydatabase"
-DB_PORT=5432
-DB_VOLUME="pgdata"
-DB_MIGRATIONS_DIR="./database"
+# Env vars
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
 
 if [ "$(docker ps -aq -f name=$DB_CONTAINER_NAME)" ]; then
     echo "Stopping and removing existing PostgreSQL container..."
