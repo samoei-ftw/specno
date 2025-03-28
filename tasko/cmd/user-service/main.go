@@ -5,8 +5,10 @@
 
 package main
 
-// TODO: Implement user service entry point
+import (
+	"fmt"
+)
 
 func main() {
-
+	fmt.Println("Tasko Launched.")
 }
