@@ -1,4 +1,10 @@
 #!/bin/bash
+# Starts PostgreSQL in a local Docker container and runs migrations
+# Author: Samoei Oloo
+# Created: 2025-03-28
+#
+# This script sets up a PostgreSQL container and applies migrations
+# using SQL files located in the database directory.
 
 DB_CONTAINER_NAME="specno-db"
 DB_USER="postgres"
