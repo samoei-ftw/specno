@@ -2,20 +2,18 @@ FROM golang:1.20 AS build
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-
+COPY go.mod ./
 RUN go mod tidy
 
 COPY . .
-
-RUN go build -o /go-app cmd/user-service/main.go
+RUN go build -o /specno-be cmd/user-service/main.go
 
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-COPY --from=build /go-app /go-app
+COPY --from=build /specno-be /specno-be
 
 EXPOSE 8080
 
-CMD ["/go-app"]
+CMD ["/specno-be"]

@@ -1,4 +1,5 @@
-//package user
+package user
+
 // TODO
 type User struct {
 	ID    int    `json:"id"`
