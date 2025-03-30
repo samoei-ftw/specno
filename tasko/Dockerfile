@@ -15,7 +15,11 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
+
 COPY --from=build /specno-be /specno-be
+
+
+COPY .env .env
 
 RUN chmod +x /specno-be
 
