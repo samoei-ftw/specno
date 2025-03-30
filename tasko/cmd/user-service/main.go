@@ -1,45 +1,34 @@
-// Package main
-// Author: Samoei Oloo
-// Created: 2025-03-28
-// License: None
-//
-// This script is responsible for the main execution of this project
-
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/samoei-ftw/tasko/config"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+
+	"github.com/samoei-ftw/tasko/internal/models"
+	"github.com/samoei-ftw/tasko/internal/user"
 )
 
-var db *gorm.DB
-
 func main() {
+	// Load environment variables
 	err := godotenv.Load()
-	config.Load()
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	// Create the DSN (Data Source Name) string
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPassword, dbName, dbPort)
-	// Connect to the database
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to the database:", err)
+		log.Fatal("Error loading .env file")
 	}
-	fmt.Println("Running container on port 8080...")
 
-	for {
-		time.Sleep(10 * time.Second) // keep container alive
+	// Initialize the database
+	models.InitDB()
+
+	// Define routes
+	http.HandleFunc("/register", user.RegisterHandler)
+
+	// Start the server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
+	log.Println("Server starting on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

@@ -1,45 +1,34 @@
-// Author: Samoei Oloo
-// Created: 2025-03-28
-// License: None
-//
-// This handler is responsible for the User
 package user
 
 import (
 	"encoding/json"
 	"net/http"
-
-	user "github.com/samoei-ftw/tasko/internal/models"
-	"github.com/samoei-ftw/tasko/pkg/auth"
-	"golang.org/x/crypto/bcrypt"
 )
 
+// Process user registration requests
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var userInput user.User
-	if err := json.NewDecoder(r.Body).Decode(&userInput); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// Decode JSON request body into struct
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
+	// Call service layer to register user
+	userID, err := RegisterUser(input.Email, input.Password)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return
 	}
 
-	userInput.Password = string(passwordHash)
-	userID, err := user.CreateUser(userInput)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	token, err := auth.GenerateToken(userID)
-	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	// Respond with success
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"id":      userID,
+		"message": "User registered successfully",
+	})
 }

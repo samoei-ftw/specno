@@ -1,9 +1,9 @@
-FROM golang:1.20 AS build
+FROM golang:1.23 AS build
 
 WORKDIR /app
 
+RUN go version
 COPY go.mod ./
-RUN go mod tidy
 
 COPY . .
 RUN go build -o /specno-be cmd/user-service/main.go
@@ -14,6 +14,8 @@ RUN apk --no-cache add ca-certificates
 
 COPY --from=build /specno-be /specno-be
 
-EXPOSE 8080
+RUN chmod +x /specno-be
 
+EXPOSE 8080
+RUN ls -l /
 CMD ["/specno-be"]
