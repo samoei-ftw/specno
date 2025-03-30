@@ -1,14 +1,14 @@
--- Migration Script to add tables
-
--- Users
+-- Users Table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE users
+ADD CONSTRAINT uni_users_email UNIQUE (email);
 
--- Projects
+-- Projects Table
 CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS projects (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Tasks
+-- Tasks Table
 CREATE TABLE IF NOT EXISTS tasks (
     id SERIAL PRIMARY KEY,
     project_id INT NOT NULL,
