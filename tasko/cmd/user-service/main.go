@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +14,6 @@ import (
 func main() {
 	// Load environment variables
 	err := godotenv.Load(".env")
-	//fmt.Println("DB_USER:", os.Getenv("DB_USER"))
-	//fmt.Println("DB_PASSWORD:", os.Getenv("DB_PASSWORD"))
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}

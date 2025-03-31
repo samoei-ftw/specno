@@ -27,3 +27,4 @@ go.mod
 .env
 .DS_Store
 .gitignore
+db-diagram.png
