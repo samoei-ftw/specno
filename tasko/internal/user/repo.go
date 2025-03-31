@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/samoei-ftw/tasko/internal/models"
+	"tasko/internal/models"
 )
 
 func CreateUser(user models.User) (uint, error) {

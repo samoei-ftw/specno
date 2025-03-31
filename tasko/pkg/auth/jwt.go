@@ -7,9 +7,12 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
+	"net/http"
 	"os"
+	"tasko/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -51,7 +54,6 @@ func GenerateToken(userID int) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-// ParseJWT parses the JWT token
 func ParseJWT(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
@@ -67,7 +69,6 @@ func ParseJWT(tokenStr string) (*Claims, error) {
 	return claims, nil
 }
 
-// checks if the JWT token is valid
 func ValidateToken(tokenStr string) (bool, error) {
 	claims, err := ParseJWT(tokenStr)
 	if err != nil {
@@ -80,4 +81,33 @@ func ValidateToken(tokenStr string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	var credentials models.UserCredentials
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Validate user credentials
+	/**user, err := repo.GetUserByEmail(credentials.Email)
+	  if err != nil || user.Password != credentials.Password {
+	      http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+	      return
+	  }*/
+
+	// Generate JWT token
+	token, err := GenerateToken(user)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]string{
+		"token": token,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
