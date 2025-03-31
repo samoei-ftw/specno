@@ -15,6 +15,9 @@ import (
 	"tasko/internal/models"
 	"time"
 
+	//"github.com/dgrijalva/jwt-go"
+	"strings"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
 )
@@ -110,4 +113,28 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+func JwtMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get("Authorization")
+		if tokenString == "" {
+			http.Error(w, "Missing token", http.StatusUnauthorized)
+			return
+		}
+		tokenString = strings.Split(tokenString, " ")[1]
+		/** token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		        return nil, fmt.Errorf("invalid signing method")
+		    }
+		    return jwtSecretKey, nil
+		})*/
+
+		/**  if err != nil || !token.Valid {
+		    http.Error(w, "Invalid token", http.StatusUnauthorized)
+		    return
+		}*/
+
+		// Proceed to the next handler if the token is valid
+		next.ServeHTTP(w, r)
+	})
 }
