@@ -1,24 +1,34 @@
-// Package main
-// Author: Samoei Oloo
-// Created: 2025-03-28
-// License: None
-//
-// This script is responsible for the main execution of this project
-
 package main
 
 import (
-	"fmt"
-	"time"
+	"log"
+	"net/http"
+	"os"
 
-	"github.com/samoei-ftw/tasko/config"
+	"github.com/joho/godotenv"
+
+	"github.com/samoei-ftw/tasko/internal/models"
+	"github.com/samoei-ftw/tasko/internal/user"
 )
 
 func main() {
-	fmt.Println("Running container on port 8080...")
 	// Load environment variables
-	config.Load()
-	for {
-		time.Sleep(10 * time.Second) // keep container alive
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
+
+	// Initialize the database
+	models.InitDB()
+
+	// Define routes
+	http.HandleFunc("/register", user.RegisterHandler)
+
+	// Start the server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Println("Server starting on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
