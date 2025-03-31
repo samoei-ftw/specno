@@ -4,20 +4,24 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
 type User struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
+	ID       uint   `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
+
+// Example of UserCredentials struct if you use it for login
+type UserCredentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+var DB *gorm.DB
 
 // Initializes the database connection
 func InitDB() {
