@@ -1,41 +1,51 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRegister } from "../hooks/useRegister";
-import React from "react";
+import "../styles/Register.css";
+
+const FadeButton: React.FC<{ title: string; onClick: () => void }> = ({ title, onClick }) => {
+    const [hover, setHover] = useState(false);
+
+    return (
+        <button
+            className={`fade-button ${hover ? "hover" : ""}`}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            onClick={onClick}
+        >
+            {title}
+        </button>
+    );
+};
 
 const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { mutate, isPending, error, data } = useRegister();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = () => {
         mutate({ email, password });
     };
 
     return (
-        <div className="flex h-screen items-center justify-center bg-black">
-            <form onSubmit={handleSubmit} className="p-6 bg-gray-800 rounded-lg shadow-md">
-                <h2 className="text-white text-xl mb-4">Register</h2>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mb-2 p-2 w-full rounded"
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="mb-2 p-2 w-full rounded"
-                />
-                <button type="submit" className="w-full p-2 bg-blue-600 text-white rounded" disabled={isPending}>
-                    {isPending ? "Registering..." : "Register"}
-                </button>
-                {error && <p className="text-red-500 mt-2">Error: {error.message}</p>}
-                {data && <p className="text-green-500 mt-2">Registered successfully!</p>}
-            </form>
+        <div className="register-container">
+            <h1 className="register-title">REGISTER</h1>
+            <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="register-input"
+            />
+            <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="register-input"
+            />
+            <FadeButton title={isPending ? "Registering..." : "Register"} onClick={handleSubmit} />
+            {error && <p className="error-text">Error: {error.message}</p>}
+            {data && <p className="success-text">Registered successfully!</p>}
         </div>
     );
 };
