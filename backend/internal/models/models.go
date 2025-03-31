@@ -13,6 +13,7 @@ type User struct {
 	ID       uint   `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 // Example of UserCredentials struct if you use it for login
@@ -24,7 +25,7 @@ type UserCredentials struct {
 var DB *gorm.DB
 
 // Initializes the database connection
-func InitDB() {
+func InitDB() *gorm.DB {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		os.Getenv("DB_CONTAINER_NAME"),
@@ -47,4 +48,6 @@ func InitDB() {
 	}
 
 	fmt.Println("Database connected and migrated successfully!")
+
+	return DB
 }

@@ -9,6 +9,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Fetches a user by their email.
+func GetUserByEmail(email string) (*models.User, error) {
+	user, err := repo.GetUserByEmail(email)
+	if err != nil {
+		if err.Error() == "user not found" {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
 // RegisterUser handles user registration
 func RegisterUser(email, password string) (uint, error) {
 	// Check if user already exists
