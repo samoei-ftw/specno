@@ -3,7 +3,8 @@ package user
 import (
 	"errors"
 
-	"github.com/samoei-ftw/tasko/internal/models"
+	"tasko/internal/models"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
