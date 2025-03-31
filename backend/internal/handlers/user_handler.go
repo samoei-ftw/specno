@@ -68,9 +68,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return token
 	response := struct {
-		Token string `json:"token"`
+		Token  string `json:"token"`
+		Role   string `json:"role"`
+		UserId int    `json:"user_id"`
 	}{
-		Token: token,
+		Token:  token,
+		Role:   user.Role,
+		UserId: int(user.ID),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
