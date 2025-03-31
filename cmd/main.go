@@ -1,14 +1,17 @@
 package main
 
 import (
+	//"fmt"
 	"log"
 	"net/http"
 	"os"
+	"tasko/internal/handlers"
+
+	//"tasko/internal/models"
 
 	"github.com/joho/godotenv"
-
-	"tasko/internal/models"
-	"tasko/internal/user"
+	//"gorm.io/driver/postgres"
+	//"gorm.io/gorm"
 )
 
 func main() {
@@ -18,17 +21,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Initialize the database
-	models.InitDB()
-
-	// Define routes
-	http.HandleFunc("/register", user.RegisterHandler)
-
 	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+	http.HandleFunc("/register", handlers.RegisterHandler)
 	log.Println("Server starting on port", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

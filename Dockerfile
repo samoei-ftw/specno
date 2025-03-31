@@ -1,4 +1,4 @@
-FROM golang:1.23 AS build
+FROM golang:1.24.1 AS build
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ COPY . .
 # Set environment variables for cross-compilation
 ENV GOARCH=amd64
 ENV GOOS=linux
-RUN go build -o /specno-be cmd/user-service/main.go
+RUN go build -o /specno-be cmd/main.go
 
 FROM alpine:latest
 
