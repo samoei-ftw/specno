@@ -22,8 +22,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call service layer
-	userID, err := services.RegisterUser(dto.Email, dto.Password) // FIXED: Corrected call
+	userID, err := services.RegisterUser(dto.Email, dto.Password)
 	if err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return

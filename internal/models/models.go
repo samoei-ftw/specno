@@ -1,16 +1,12 @@
 package models
 
 import (
-	"log"
-
 	"fmt"
+	"log"
+	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	//"log"
-	"os"
-	//"time"
 )
 
 type User struct {

@@ -2,7 +2,7 @@ package services
 
 import (
 	"errors"
-	"tasko/internal/models" // Ensure this matches your project structure
+	"tasko/internal/models"
 	"tasko/internal/repo"
 
 	"golang.org/x/crypto/bcrypt"
@@ -16,13 +16,12 @@ func RegisterUser(email, password string) (uint, error) {
 		return 0, errors.New("failed to hash password")
 	}
 
-	// Create a new user object
 	user := models.User{
 		Email:    email,
 		Password: string(hashedPassword),
 	}
 
-	// Call the repo layer to save the user
+	// save user
 	userID, err := repo.CreateUser(user)
 	if err != nil {
 		return 0, err

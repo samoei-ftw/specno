@@ -1,17 +1,12 @@
 package main
 
 import (
-	//"fmt"
 	"log"
 	"net/http"
 	"os"
 	"tasko/internal/handlers"
 
-	//"tasko/internal/models"
-
 	"github.com/joho/godotenv"
-	//"gorm.io/driver/postgres"
-	//"gorm.io/gorm"
 )
 
 func main() {
