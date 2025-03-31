@@ -4,6 +4,6 @@
 // License: None
 //
 // This script is responsible for the main execution of this project
-package project
+package services
 
 // TODO

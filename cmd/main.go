@@ -7,8 +7,10 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"tasko/internal/handlers"
 	"tasko/internal/models"
-	"tasko/internal/user"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -19,10 +21,12 @@ func main() {
 	}
 
 	// Initialize the database
-	models.InitDB()
+	db := models.InitDB()
 
-	// Define routes
-	http.HandleFunc("/register", user.RegisterHandler)
+	r := mux.NewRouter()
+
+	//r.HandleFunc("/register", handlers.RegisterHandler(db)).Methods("POST")
+	r.HandleFunc("/login", handlers.LoginHandler(db)).Methods("POST")
 
 	// Start the server
 	port := os.Getenv("PORT")
@@ -30,5 +34,5 @@ func main() {
 		port = "8080"
 	}
 	log.Println("Server starting on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }

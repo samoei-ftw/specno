@@ -12,11 +12,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"tasko/internal/models"
+	"strings"
 	"time"
 
-	//"github.com/dgrijalva/jwt-go"
-	"strings"
+	"tasko/internal/models"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -25,14 +24,13 @@ import (
 var jwtKey []byte
 
 func init() {
-	//load env
+	// Load environment variables
 	err := godotenv.Load()
-
 	if err != nil {
-		log.Println("Warning")
+		log.Println("Warning: Could not load .env file")
 	}
 
-	// get jwt secret key
+	// Get JWT secret key
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		log.Fatal("JWT_SECRET not set in environment variables")
@@ -45,7 +43,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateJWT generates a new JWT token
+// Generates a new JWT token
 func GenerateToken(userID int) (string, error) {
 	claims := Claims{
 		UserID: userID,
@@ -67,7 +65,7 @@ func ParseJWT(tokenStr string) (*Claims, error) {
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return nil, err
+		return nil, errors.New("invalid token")
 	}
 	return claims, nil
 }
@@ -78,7 +76,6 @@ func ValidateToken(tokenStr string) (bool, error) {
 		return false, err
 	}
 
-	// Check expiration
 	if claims.ExpiresAt.Time.Before(time.Now()) {
 		return false, errors.New("token has expired")
 	}
@@ -94,14 +91,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate user credentials
-	/**user, err := repo.GetUserByEmail(credentials.Email)
-	  if err != nil || user.Password != credentials.Password {
-	      http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-	      return
-	  }*/
+	// user, err := repo.GetUserByEmail(credentials.Email)
+	// if err != nil || user.Password != credentials.Password {
+	//     http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+	//     return
+	// }
 
 	// Generate JWT token
-	token, err := GenerateToken(user)
+	token, err := GenerateToken(int(credentials.ID))
 	if err != nil {
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
@@ -114,6 +111,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("Authorization")
@@ -121,18 +119,19 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Missing token", http.StatusUnauthorized)
 			return
 		}
-		tokenString = strings.Split(tokenString, " ")[1]
-		/** token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return nil, fmt.Errorf("invalid signing method")
-		    }
-		    return jwtSecretKey, nil
-		})*/
 
-		/**  if err != nil || !token.Valid {
-		    http.Error(w, "Invalid token", http.StatusUnauthorized)
-		    return
-		}*/
+		parts := strings.Split(tokenString, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			http.Error(w, "Invalid token format", http.StatusUnauthorized)
+			return
+		}
+		tokenString = parts[1]
+
+		_, err := ParseJWT(tokenString)
+		if err != nil {
+			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			return
+		}
 
 		// Proceed to the next handler if the token is valid
 		next.ServeHTTP(w, r)
