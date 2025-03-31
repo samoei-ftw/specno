@@ -24,6 +24,7 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/register", handlers.RegisterHandler)
+	mux.HandleFunc("/login", handlers.LoginHandler)
 
 	// Use cors middleware
 	c := cors.New(cors.Options{
