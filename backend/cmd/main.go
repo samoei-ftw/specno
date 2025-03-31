@@ -7,6 +7,7 @@ import (
 	"tasko/internal/handlers"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -21,7 +22,22 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	http.HandleFunc("/register", handlers.RegisterHandler)
-	log.Println("Server starting on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/register", handlers.RegisterHandler)
+
+	// Use cors middleware
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type"},
+	})
+
+	handler := c.Handler(mux)
+
+	// Start the server
+	log.Println("Starting server on port", port)
+	err = http.ListenAndServe(":"+port, handler)
+	if err != nil {
+		log.Fatal("Error starting server:", err)
+	}
 }
