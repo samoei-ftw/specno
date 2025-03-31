@@ -7,8 +7,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/samoei-ftw/tasko/internal/models"
-	"github.com/samoei-ftw/tasko/internal/user"
+	"tasko/internal/models"
+	"tasko/internal/user"
 )
 
 func main() {
