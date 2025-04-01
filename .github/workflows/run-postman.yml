@@ -9,6 +9,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -17,20 +20,11 @@ jobs:
       run: npm install -g newman
 
     - name: Run Postman Collection
-      env:
-        POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
       run: |
         NEWMAN_COLLECTION_URL="https://api.getpostman.com/collections/31834172-363c0706-8b87-41fe-bfbc-e130628cb935?apikey=$POSTMAN_API_KEY"
         NEWMAN_ENVIRONMENT_URL="https://api.getpostman.com/environments/31834172-3aff95b0-3b98-4739-96b3-764c3d82b04f?apikey=$POSTMAN_API_KEY"
         
-        
         curl -o collection.json $NEWMAN_COLLECTION_URL
         curl -o environment.json $NEWMAN_ENVIRONMENT_URL
 
-        newman run collection.json -e environment.json --reporters cli,junit --reporter-junit-export newman-report.xml
-
-    - name: Upload Newman Report
-      uses: actions/upload-artifact@v2
-      with:
-        name: newman-report
-        path: newman-report.xml
+        newman run collection.json -e environment.json --reporters cli
