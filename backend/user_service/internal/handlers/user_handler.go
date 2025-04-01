@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"tasko/internal/pkg/auth"
-	"tasko/internal/services"
+
+	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
+
+	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -60,7 +62,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid password", http.StatusUnauthorized)
 		return
 	}
-	token, err := auth.GenerateToken(user.ID, user.Role)
+	token, err := auth.GenerateToken(int(user.ID)) // TODO: add role as arg
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return

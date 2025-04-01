@@ -3,8 +3,9 @@ package services
 import (
 	"errors"
 	"log"
-	"tasko/internal/models"
-	"tasko/internal/repo"
+
+	"github.com/samoei-ftw/specno/backend/common/models"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 
 	"golang.org/x/crypto/bcrypt"
 )

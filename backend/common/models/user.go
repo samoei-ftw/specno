@@ -16,8 +16,8 @@ type User struct {
 	Role     string `json:"role"`
 }
 
-// Example of UserCredentials struct if you use it for login
 type UserCredentials struct {
+	ID       uint   `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

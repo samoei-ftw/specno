@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"tasko/internal/handlers"
+
+	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"

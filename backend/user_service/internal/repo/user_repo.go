@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"tasko/internal/models"
+
+	"github.com/samoei-ftw/specno/backend/common/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -43,6 +44,7 @@ func CreateUser(user models.User) (uint, error) {
 
 	return user.ID, nil
 }
+
 func GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 	result := DB.Where("email = ?", email).First(&user)

@@ -15,7 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"tasko/internal/models"
+	"github.com/samoei-ftw/specno/backend/common/models"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -91,11 +92,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate user credentials
-	// user, err := repo.GetUserByEmail(credentials.Email)
-	// if err != nil || user.Password != credentials.Password {
-	//     http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-	//     return
-	// }
+	user, err := repo.GetUserByEmail(credentials.Email)
+	if err != nil || user.Password != credentials.Password {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
 
 	// Generate JWT token
 	token, err := GenerateToken(int(credentials.ID))
