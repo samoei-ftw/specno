@@ -18,7 +18,6 @@ cleanup() {
   fi
   docker rm $CONTAINER_ONE
   docker rm $CONTAINER_TWO
-  #docker kill specno-user-service specno-db || true
   docker volume rm specno-db || true
   docker network rm specno-network || true
 }
@@ -30,7 +29,6 @@ docker network create specno-network || true
 echo "Removing existing containers..."
 docker rm -f specno-user-service || true
 docker rm -f specno-postgres || true
-docker volume rm specno-db || true=
 docker rmi -f specno-user-service || true
 
 docker exec -it specno-db psql -U postgres -d postgres -c "
