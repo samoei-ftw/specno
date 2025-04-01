@@ -44,7 +44,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Generates a new JWT token
+// Generate a JWT token
 func GenerateToken(userID int) (string, error) {
 	claims := Claims{
 		UserID: userID,
@@ -99,7 +99,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate JWT token
-	token, err := GenerateToken(int(credentials.ID))
+	token, err := GenerateToken(int(user.ID))
 	if err != nil {
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
