@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"tasko/internal/handlers"
+	"user/internal/handlers"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"

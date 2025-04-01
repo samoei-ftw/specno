@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"tasko/internal/pkg/auth"
-	"tasko/internal/services"
+	"user/internal/pkg/auth"
+	"user/internal/services"
 
 	"golang.org/x/crypto/bcrypt"
 )

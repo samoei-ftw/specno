@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"tasko/internal/models"
+	"user/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 	"log"
-	"tasko/internal/models"
-	"tasko/internal/repo"
+	"user/internal/models"
+	"user/internal/repo"
 
 	"golang.org/x/crypto/bcrypt"
 )

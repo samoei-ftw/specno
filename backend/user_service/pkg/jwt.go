@@ -15,7 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"tasko/internal/models"
+	"user/internal/models"
+	"user/internal/repo"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -43,7 +44,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Generates a new JWT token
+// Generate a JWT token
 func GenerateToken(userID int) (string, error) {
 	claims := Claims{
 		UserID: userID,
@@ -91,14 +92,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate user credentials
-	// user, err := repo.GetUserByEmail(credentials.Email)
-	// if err != nil || user.Password != credentials.Password {
-	//     http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-	//     return
-	// }
+	user, err := repo.GetUserByEmail(credentials.Email)
+	if err != nil || user.Password != credentials.Password {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
 
 	// Generate JWT token
-	token, err := GenerateToken(int(credentials.ID))
+	token, err := GenerateToken(int(user.ID))
 	if err != nil {
 		http.Error(w, "Error generating token", http.StatusInternalServerError)
 		return
