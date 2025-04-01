@@ -1,13 +1,13 @@
 package repository
 
 import (
-	commonModels "common/internal/models"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	projectModels "project/internal/models"
 
-	taskoModels "tasko/internal/models"
+	userModels "user/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,8 +17,8 @@ var DB *gorm.DB
 
 // Interface
 type ProjectRepository interface {
-	Create(project *commonModels.Project) error
-	GetByUserID(userID int) ([]commonModels.Project, error)
+	Create(project *projectModels.Project) error
+	GetByUserID(userID int) ([]projectModels.Project, error)
 }
 
 // Struct
@@ -47,7 +47,7 @@ func InitializeDB() error {
 		return err
 	}
 
-	err = DB.AutoMigrate(&taskoModels.User{}, &commonModels.Project{})
+	err = DB.AutoMigrate(&userModels.User{}, &projectModels.Project{})
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 		return err
@@ -56,18 +56,18 @@ func InitializeDB() error {
 	return nil
 }
 
-func (r *projectRepo) Create(project *commonModels.Project) error {
+func (r *projectRepo) Create(project *projectModels.Project) error {
 	if DB == nil {
 		return errors.New("DB connection error.")
 	}
 	return r.db.Create(project).Error
 }
 
-func (r *projectRepo) GetByUserID(userID int) ([]commonModels.Project, error) {
+func (r *projectRepo) GetByUserID(userID int) ([]projectModels.Project, error) {
 	if DB == nil {
 		return nil, errors.New("DB connection error.")
 	}
-	var projects []commonModels.Project
+	var projects []projectModels.Project
 	if err := r.db.Where("user_id = ?", userID).Find(&projects).Error; err != nil {
 		return nil, err
 	}
