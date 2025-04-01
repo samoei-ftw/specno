@@ -5,9 +5,20 @@
 #
 # This script sets up a docker container to run the backend project locally
 
-
+CONTAINER_ONE="specno-user-service"
+CONTAINER_TWO="specno-db"
 cleanup() {
-  docker kill specno-user-service specno-db || true
+  if [ "$(docker ps -q -f name=$CONTAINER_ONE)" ]; then
+    echo "Stopping container: $CONTAINER_ONE"
+    docker stop $CONTAINER_ONE
+  fi
+  if [ "$(docker ps -q -f name=$CONTAINER_TWO)" ]; then
+    echo "Stopping container: $CONTAINER_TWO"
+    docker stop $CONTAINER_TWO
+  fi
+  docker rm $CONTAINER_ONE
+  docker rm $CONTAINER_TWO
+  #docker kill specno-user-service specno-db || true
   docker volume rm specno-db || true
   docker network rm specno-network || true
 }
