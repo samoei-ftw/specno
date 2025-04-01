@@ -5,15 +5,30 @@
 #
 # This script sets up a docker container to run the backend project locally
 
+CONTAINER_ONE="specno-user-service"
+CONTAINER_TWO="specno-db"
+cleanup() {
+  if [ "$(docker ps -q -f name=$CONTAINER_ONE)" ]; then
+    echo "Stopping container: $CONTAINER_ONE"
+    docker stop $CONTAINER_ONE
+  fi
+  if [ "$(docker ps -q -f name=$CONTAINER_TWO)" ]; then
+    echo "Stopping container: $CONTAINER_TWO"
+    docker stop $CONTAINER_TWO
+  fi
+  docker rm $CONTAINER_ONE
+  docker rm $CONTAINER_TWO
+  docker volume rm specno-db || true
+  docker network rm specno-network || true
+}
+
+trap cleanup INT
+
 docker network create specno-network || true
 
 echo "Removing existing containers..."
 docker rm -f specno-user-service || true
-
 docker rm -f specno-postgres || true
-docker volume rm specno-postgres-data || true
-
-echo "Removing existing Docker image(s)..."
 docker rmi -f specno-user-service || true
 
 docker exec -it specno-db psql -U postgres -d postgres -c "
@@ -25,9 +40,6 @@ BEGIN
     END LOOP;
 END \$\$;"
 
-./run_db.sh
-
-echo "Building Docker image..."
 docker build -t specno-user-service -f Dockerfile .
 
 echo "Starting container..."
@@ -37,4 +49,17 @@ docker run -d \
   --network specno-network \
   specno-user-service
 
-echo "Backend server is running on port 8080."
+timeout=1
+start_time=$(date +%s)
+
+while true; do
+  current_time=$(date +%s)
+  elapsed_time=$((current_time - start_time))
+  
+  if [ "$elapsed_time" -ge "$timeout" ]; then
+    echo "Exiting..."
+    break
+  fi
+
+  sleep 1
+done
