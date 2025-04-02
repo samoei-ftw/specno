@@ -95,8 +95,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch user by email using the UserService
 	// Pass the repo as the interface type
-	userRepo := repo.NewUserRepository(repo.GetDB()) // Assuming DB is your gorm DB instance
-    userService := services.NewUserService(userRepo) // Pass the interface here
+	userRepo := repo.NewUserRepository(repo.GetDB())
+    userService := services.NewUserService(userRepo)
 	user, err := userService.GetUserByEmail(credentials.Email)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
