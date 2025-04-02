@@ -5,20 +5,18 @@
 #
 # This script sets up a docker container to run the backend project locally
 
-CONTAINER_ONE="specno-user-service"
-CONTAINER_TWO="specno-db"
+CONTAINER_ONE="tasko-user-service"
+CONTAINER_TWO="tasko-database"
 cleanup() {
   if [ "$(docker ps -q -f name=$CONTAINER_ONE)" ]; then
-    echo "Stopping container: $CONTAINER_ONE"
     docker stop $CONTAINER_ONE
   fi
   if [ "$(docker ps -q -f name=$CONTAINER_TWO)" ]; then
-    echo "Stopping container: $CONTAINER_TWO"
     docker stop $CONTAINER_TWO
   fi
   docker rm $CONTAINER_ONE
   docker rm $CONTAINER_TWO
-  docker volume rm specno-db || true
+  docker volume rm tasko-database || true
   docker network rm specno-network || true
 }
 
@@ -27,11 +25,11 @@ trap cleanup INT
 docker network create specno-network || true
 
 echo "Removing existing containers..."
-docker rm -f specno-user-service || true
+docker rm -f tasko-user-service || true
 docker rm -f specno-postgres || true
-docker rmi -f specno-user-service || true
+docker rmi -f tasko-user-service || true
 
-docker exec -it specno-db psql -U postgres -d postgres -c "
+docker exec -it tasko-database psql -U postgres -d postgres -c "
 DO \$\$ DECLARE
     r RECORD;
 BEGIN
@@ -40,14 +38,14 @@ BEGIN
     END LOOP;
 END \$\$;"
 
-docker build -t specno-user-service -f Dockerfile .
+docker build -t tasko-user-service -f Dockerfile .
 
-echo "Starting container..."
+echo "Starting user container..."
 docker run -d \
   -p 8080:8080 \
-  --name specno-user-service \
+  --name tasko-user-service \
   --network specno-network \
-  specno-user-service
+  tasko-user-service
 
 timeout=1
 start_time=$(date +%s)
