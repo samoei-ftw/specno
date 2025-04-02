@@ -5,8 +5,9 @@
 #
 # This script sets up a docker container to run the backend project locally
 
-CONTAINER_ONE="user-api"
+CONTAINER_ONE="specno-user-service"
 CONTAINER_TWO="specno-db"
+
 cleanup() {
   if [ "$(docker ps -q -f name=$CONTAINER_ONE)" ]; then
     docker stop $CONTAINER_ONE
@@ -25,10 +26,26 @@ trap cleanup INT
 docker network inspect specno-network > /dev/null 2>&1 || docker network create specno-network
 
 echo "Removing existing containers..."
-docker rm -f user-api || true
-docker rm -f specno-postgres || true
+docker rm -f $CONTAINER_ONE || true
+docker rm -f $CONTAINER_TWO || true
 docker rmi -f user-api || true
 
+echo "Building Docker image for user-api..."
+docker build -t user-api -f ./Dockerfile .
+
+echo "Starting database container..."
+docker run -d \
+  --name specno-db \
+  --network specno-network \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=postgres \
+  postgres:latest
+
+echo "Waiting for database to start..."
+sleep 5
+
+echo "Cleaning database..."
 docker exec -it specno-db psql -U postgres -d postgres -c "
 DO \$\$ DECLARE
     r RECORD;
@@ -38,18 +55,15 @@ BEGIN
     END LOOP;
 END \$\$;"
 
-echo "Building Docker image for user-api..."
-docker build -t user-api -f ./user-service/Dockerfile .
-
 echo "Starting user container..."
 docker run -d \
   -p 8080:8080 \
-  --name specno-user-service \
+  --name $CONTAINER_ONE \
   --network specno-network \
-  -v $(pwd)/.env:/app/.env \
+  --env-file .env \
   user-api
 
-timeout=1
+timeout=10
 start_time=$(date +%s)
 
 while true; do
@@ -57,10 +71,10 @@ while true; do
   elapsed_time=$((current_time - start_time))
   
   if [ "$elapsed_time" -ge "$timeout" ]; then
-    echo "Exiting..."
+    echo "Timeout reached. Exiting..."
     break
   fi
-  # Check if the user-api service is up and running
+
   if docker logs $CONTAINER_ONE 2>&1 | grep -q "Server started"; then
     echo "User API service is up and running."
     break
