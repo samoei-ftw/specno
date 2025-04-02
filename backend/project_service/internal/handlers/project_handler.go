@@ -19,21 +19,22 @@ import (
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	var dto struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		UserID      int    `json:"user_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		http.Error(w, "Invalid request payload.", http.StatusBadRequest)
 		return
 	}
 
-	if dto.Email == "" || dto.Password == "" {
-		http.Error(w, "Email and password are required", http.StatusBadRequest)
+	if dto.Name == "" {
+		http.Error(w, "Project name is required.", http.StatusBadRequest)
 		return
 	}
 
-	userID, err := services.RegisterUser(dto.Email, dto.Password)
+	userID, err := services.CreateProject(dto.Email, dto.Password)
 	if err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return
