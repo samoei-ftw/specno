@@ -22,7 +22,7 @@ RUN apk --no-cache add ca-certificates
 COPY --from=build /user-api /user-api
 
 
-COPY ../../.env /app/backend/.env
+COPY .env /app/.env
 
 RUN chmod +x /user-api
 
