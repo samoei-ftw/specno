@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Load environment variables
-	err := godotenv.Load(".env")
+	err := godotenv.Load("/backend/.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -26,7 +26,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/register", handlers.RegisterHandler)
 	mux.HandleFunc("/login", handlers.LoginHandler)
-	mux.HandleFunc("/users/{arg:[0-9]+}", handlers.GetUserHandler)
+	mux.HandleFunc("/users/{arg:[0-9]+}", handlers.FetchUserHandler)
 
 	// Use cors middleware
 	c := cors.New(cors.Options{

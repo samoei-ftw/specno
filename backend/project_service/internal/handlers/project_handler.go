@@ -12,38 +12,56 @@ import (
 
 	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
 
+	"github.com/samoei-ftw/specno/backend/common/utils"
 	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 
+	"github.com/samoei-ftw/specno/backend/gateways"
 	"golang.org/x/crypto/bcrypt"
 )
+var userGateway = gateways.UserGatewayInit()
 
 func CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
-	var dto struct {
+	var request struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
 		UserID      int    `json:"user_id"`
 	}
-
-	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		http.Error(w, "Invalid request payload.", http.StatusBadRequest)
+	
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+			Status:  "error",
+			Message: "Invalid request payload",
+		})
 		return
 	}
 
-	if dto.Name == "" {
-		http.Error(w, "Project name is required.", http.StatusBadRequest)
+	if request.Name == "" || request.Description == "" || request.UserID == 0 {
+		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+			Status:  "error",
+			Message: "Project name and valid user ID are required",
+		})
 		return
 	}
 
-	userID, err := services.CreateProject(dto.Email, dto.Password)
+	project, err := services.CreateProject(request.Name, request.Description, request.UserID)
 	if err != nil {
-		http.Error(w, "Registration failed", http.StatusInternalServerError)
+		if err.Error() == "user not found" {
+			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
+				Status:  "error",
+				Message: "User not found",
+			})
+			return
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+			Status:  "error",
+			Message: "Failed to create project",
+		})
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":      userID,
-		"message": "User registered successfully",
+	utils.RespondWithJSON(w, http.StatusCreated, utils.Response{
+		Status: "success",
+		Data:   project,
 	})
 }
 

@@ -8,7 +8,7 @@ import (
 
 	projectModels "github.com/samoei-ftw/specno/backend/project_service/internal/models"
 
-	userModels "github.com/samoei-ftw/specno/backend/user_service/models"
+	//commonModels "github.com/samoei-ftw/specno/backend/common/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,13 +16,11 @@ import (
 
 var DB *gorm.DB
 
-// Interface
 type ProjectRepository interface {
 	Create(project *projectModels.Project) error
 	GetByUserID(userID int) ([]projectModels.Project, error)
 }
 
-// Struct
 type projectRepo struct {
 	db *gorm.DB
 }

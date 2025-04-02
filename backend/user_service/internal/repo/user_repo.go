@@ -13,7 +13,18 @@ import (
 )
 
 var DB *gorm.DB
+type UserRepository interface {
+	Create(user *models.User) error
+	GetByUserID(userID int) ([]models.User, error)
+}
 
+type userRepo struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return nil
+}
 func CreateUser(user models.User) (uint, error) {
 	// Initialize the database
 	dsn := fmt.Sprintf(

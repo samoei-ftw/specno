@@ -4,20 +4,17 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 
 	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 
-	"strconv"
-
-	"github.com/gorilla/mux"
-	"github.com/samoei-ftw/specno/backend/common/utils"
-
-	"github.com/samoei-ftw/specno/backend/gateways"
 	"golang.org/x/crypto/bcrypt"
 )
-var userGateway = gateways.UserGatewayInit()
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var dto struct {
 		Email    string `json:"email"`
@@ -90,36 +87,35 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract user ID from URL
+func FetchUserHandler(w http.ResponseWriter, r *http.Request){
 	vars := mux.Vars(r)
-	userId, exists := vars["arg"]
+	userIDStr, exists := vars["arg"]
 	if !exists {
-		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-			Status:  "error",
-			Message: "Missing user ID in request",
-		})
+		http.Error(w, "User ID is required", http.StatusBadRequest)
 		return
 	}
-	userID, err := strconv.Atoi(userId)
+
+	// Convert userID to int
+	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
-		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-			Status:  "error",
-			Message: "Invalid user ID. Check if it is a valid guid.",
-		})
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
-	user, err := userGateway.GetUserByID(userID)
+
+	// Fetch user from the service layer
+	user, err := services.GetUserByID(userID)
 	if err != nil {
 		log.Printf("Error fetching user %d: %v", userID, err)
-		utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-			Status:  "error",
-			Message: "Failed to retrieve user",
-		})
+		if err.Error() == "user not found" {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
-		Status: "success",
-		Data:   user,
-	})
+
+	// Respond with user data in JSON format
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
 }

@@ -2,27 +2,30 @@ FROM golang:1.24.1 AS build
 
 WORKDIR /app
 
-RUN go version
-COPY go.mod ./
+COPY go.mod go.sum ./
+RUN go mod tidy 
+
 COPY . .
+WORKDIR /app/user_service
+COPY ./common /app/common
 
 # Set environment variables for cross-compilation
 ENV GOARCH=amd64
 ENV GOOS=linux
-RUN go build -o /specno-be cmd/main.go
+RUN go build -o /user-api ./cmd/main.go
 
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
 
-COPY --from=build /specno-be /specno-be
+COPY --from=build /user-api /user-api
 
 
-COPY .env .env
+COPY ../../.env /app/backend/.env
 
-RUN chmod +x /specno-be
+RUN chmod +x /user-api
 
 EXPOSE 8080
 
-CMD ["/specno-be"]
+CMD ["/user-api"]

@@ -9,7 +9,13 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
+type UserService struct {
+	repo repo.UserRepository
+}
 
+func NewUserService(repo repo.UserRepository) *UserService {
+	return &UserService{repo: repo}
+}
 // Fetches a user by their email.
 func GetUserByEmail(email string) (*models.User, error) {
 	user, err := repo.GetUserByEmail(email)

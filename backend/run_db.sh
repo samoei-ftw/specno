@@ -10,7 +10,7 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
-docker network create specno-network || true
+#docker network create specno-network || true
 
 if [ "$(docker ps -aq -f name=$DB_CONTAINER_NAME)" ]; then
     docker stop $DB_CONTAINER_NAME && docker rm $DB_CONTAINER_NAME
