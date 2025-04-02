@@ -1,4 +1,8 @@
-version: '3.8'
+version: "3.8"
+
+networks:
+  specno-network:
+    driver: bridge
 
 services:
   nginx:
@@ -8,12 +12,83 @@ services:
       - "8081:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - specno-network
     depends_on:
-      - user-service
+      user-service:
+        condition: service_healthy
+      project-service:
+        condition: service_healthy
+    restart: on-failure  
+
+  tasko-database:
+    image: postgres:15
+    container_name: tasko-database
+    networks:
+      - specno-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   user-service:
     build:
-      context: ./user_service
+      context: ./ 
+      dockerfile: user_service/Dockerfile
     container_name: user-service
+    networks:
+      - specno-network
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: postgres
+      DB_PORT: 5432
+      DB_VOLUME: pgdata
+      DB_MIGRATIONS_DIR: ./database
+      JWT_SECRET: secret-key
+      DB_CONTAINER_NAME: tasko-database
     ports:
       - "8080:8080"
+    depends_on:
+      - tasko-database
+    command: ["/bin/sh", "-c", "./wait-for-it.sh tasko-database:5432 -- /user-api"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  project-service:
+    build:
+      context: ./ 
+      dockerfile: project_service/Dockerfile
+    container_name: project-service
+    networks:
+      - specno-network
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: postgres
+      DB_PORT: 5432
+      DB_VOLUME: pgdata
+      DB_MIGRATIONS_DIR: ./database
+      JWT_SECRET: secret-key
+      DB_CONTAINER_NAME: tasko-database
+    ports:
+      - "8082:8082"
+    depends_on:
+      - tasko-database
+      - user-service
+    command: ["/bin/sh", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  db_data:

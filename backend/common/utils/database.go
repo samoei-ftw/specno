@@ -1,4 +1,4 @@
-package repo
+package utils
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
+var DB *gorm.DB
 // InitializeDatabase sets up the database connection and runs migrations
 func InitializeDatabase() error {
 	dsn := fmt.Sprintf(

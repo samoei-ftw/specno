@@ -11,27 +11,32 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
-
-	"github.com/joho/godotenv"
+	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"github.com/samoei-ftw/specno/backend/common/utils"
+	"github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
+	repo "github.com/samoei-ftw/specno/backend/project_service/internal/repository"
+	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
 )
 
 func main() {
-	// Load environment variables
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := utils.InitializeDatabase(); err != nil {
+		log.Fatal("Database initialization failed:", err)
 	}
 
 	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"
+		port = "8082"
 	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("/project", handlers.CreateProjectHandler)
+	projectRepo := repo.NewProjectRepository(utils.GetDB())
 
+	// Initialize project service with the repository
+	projectService := services.NewProjectService(projectRepo)
+
+	// Setup router
+	r := mux.NewRouter()
+	r.HandleFunc("/projects", handlers.CreateProjectHandler(projectService)).Methods("POST")
 	// Use cors middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding
@@ -39,12 +44,11 @@ func main() {
 		AllowedHeaders: []string{"Content-Type"},
 	})
 
-	handler := c.Handler(mux)
+	handler := c.Handler(r)
 
 	// Start the server
 	log.Println("Starting server on port", port)
-	err = http.ListenAndServe(":"+port, handler)
-	if err != nil {
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Error starting server:", err)
 	}
 }

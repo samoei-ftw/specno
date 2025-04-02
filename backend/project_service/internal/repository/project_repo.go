@@ -2,15 +2,11 @@ package repository
 
 import (
 	"errors"
-	"fmt"
-	"log"
-	"os"
 
 	projectModels "github.com/samoei-ftw/specno/backend/project_service/internal/models"
 
 	//commonModels "github.com/samoei-ftw/specno/backend/common/models"
 
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -27,32 +23,6 @@ type projectRepo struct {
 
 func NewProjectRepository(db *gorm.DB) ProjectRepository {
 	return &projectRepo{db: db}
-}
-
-func InitializeDB() error {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_CONTAINER_NAME"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
-	)
-
-	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("Failed to connect to the database:", err)
-		return err
-	}
-
-	err = DB.AutoMigrate(&userModels.User{}, &projectModels.Project{})
-	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
-		return err
-	}
-
-	return nil
 }
 
 func (r *projectRepo) Create(project *projectModels.Project) error {

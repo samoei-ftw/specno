@@ -7,11 +7,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
-	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
-	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
-
 	"github.com/rs/cors"
+	repo "github.com/samoei-ftw/specno/backend/common/utils"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
+	user_repo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	userRepo := repo.NewUserRepository(repo.GetDB())
+	userRepo := user_repo.NewUserRepository(repo.GetDB())
     userService := services.NewUserService(userRepo)
 	r := mux.NewRouter()
     // Register routes with handlers, injecting the userService instance
