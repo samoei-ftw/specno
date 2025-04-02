@@ -17,6 +17,8 @@ import (
 
 	"github.com/samoei-ftw/specno/backend/common/models"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
@@ -91,9 +93,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate user credentials
-	user, err := repo.GetUserByEmail(credentials.Email)
-	if err != nil || user.Password != credentials.Password {
+	// Fetch user by email using the UserService
+	// Pass the repo as the interface type
+	userRepo := repo.NewUserRepository(repo.GetDB()) // Assuming DB is your gorm DB instance
+    userService := services.NewUserService(userRepo) // Pass the interface here
+	user, err := userService.GetUserByEmail(credentials.Email)
+	if err != nil {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// Validate password (bcrypt comparison)
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password))
+	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}

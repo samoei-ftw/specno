@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
 	var dto struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -31,7 +31,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := services.RegisterUser(dto.Email, dto.Password)
+	userID, err := service.RegisterUser(dto.Email, dto.Password)
 	if err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return
@@ -44,7 +44,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+// LoginHandler handles user login
+func LoginHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
 	var dto struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -54,7 +55,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := services.GetUserByEmail(dto.Email)
+	user, err := service.GetUserByEmail(dto.Email)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
@@ -87,23 +88,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func FetchUserHandler(w http.ResponseWriter, r *http.Request){
+// FetchUserHandler fetches user data by ID
+func FetchUserHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
 	vars := mux.Vars(r)
-	userIDStr, exists := vars["arg"]
+	userIDString, exists := vars["id"]
 	if !exists {
 		http.Error(w, "User ID is required", http.StatusBadRequest)
 		return
 	}
 
 	// Convert userID to int
-	userID, err := strconv.Atoi(userIDStr)
+	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	// Fetch user from the service layer
-	user, err := services.GetUserByID(userID)
+	user, err := service.GetUserByID(userID)
 	if err != nil {
 		log.Printf("Error fetching user %d: %v", userID, err)
 		if err.Error() == "user not found" {
@@ -113,8 +115,6 @@ func FetchUserHandler(w http.ResponseWriter, r *http.Request){
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
-	// Respond with user data in JSON format
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)

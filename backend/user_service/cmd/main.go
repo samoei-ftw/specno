@@ -8,21 +8,21 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 
-	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
 func main() {
-	// Check if .env file exists
-	if _, err := os.Stat("/app/.env"); os.IsNotExist(err) {
-		log.Fatal("ERROR: .env file not found at /app/.env")
+	// Load environment variables - TODO
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if err := repo.InitializeDatabase(); err != nil {
+		log.Fatal("Database initialization failed:", err)
 	}
-	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+
+	// Create the UserRepository with the initialized DB
+	userRepository := repo.NewUserRepository(repo.GetDB())
+
 
 	// Start the server
 	port := os.Getenv("PORT")
@@ -44,7 +44,7 @@ func main() {
 
 	// Start the server
 	log.Println("Starting server on port", port)
-	err = http.ListenAndServe(":"+port, handler)
+	err := http.ListenAndServe(":"+port, handler)
 	if err != nil {
 		log.Fatal("Error starting server:", err)
 	}
