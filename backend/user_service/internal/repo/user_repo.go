@@ -55,3 +55,15 @@ func GetUserByEmail(email string) (*models.User, error) {
 
 	return &user, nil
 }
+
+func GetUserByID(userID int) (*models.User, error) {
+	var user models.User
+	result := DB.First(&user, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, result.Error
+	}
+	return &user, nil
+}

@@ -22,7 +22,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-// RegisterUser handles user registration
+// RegisterUser handles user registration.
 func RegisterUser(email, password string) (uint, error) {
 	// Check if user already exists
 	//existingUser, _ := repo.GetUserByEmail(email)
@@ -50,4 +50,13 @@ func RegisterUser(email, password string) (uint, error) {
 	}
 
 	return userID, nil
+}
+
+// Fetches a user by their ID.
+func GetUserByID(userID int) (*models.User, error) {
+	user, err := repo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
