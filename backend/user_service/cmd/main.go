@@ -10,7 +10,7 @@ import (
 	"github.com/rs/cors"
 	repo "github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
-	user_repo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
+	userRepo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	userRepo := user_repo.NewUserRepository(repo.GetDB())
+	userRepo := userRepo.NewUserRepository(repo.GetDB())
     userService := services.NewUserService(userRepo)
 	r := mux.NewRouter()
     // Register routes with handlers, injecting the userService instance

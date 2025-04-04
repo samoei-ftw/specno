@@ -21,20 +21,6 @@ services:
         condition: service_healthy
     restart: on-failure  
 
-  tasko-database:
-    image: postgres:15
-    container_name: tasko-database
-    networks:
-      - specno-network
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: postgres
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
   user-service:
     build:
       context: ./ 
@@ -53,8 +39,6 @@ services:
       DB_CONTAINER_NAME: tasko-database
     ports:
       - "8080:8080"
-    depends_on:
-      - tasko-database
     command: ["/bin/sh", "-c", "./wait-for-it.sh tasko-database:5432 -- /user-api"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -81,9 +65,8 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - tasko-database
       - user-service
-    command: ["/bin/sh", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
+    command: ["bash", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 10s
@@ -91,4 +74,4 @@ services:
       start_period: 20s
 
 volumes:
-  db_data:
+  pgdata:

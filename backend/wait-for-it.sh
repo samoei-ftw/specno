@@ -1,8 +1,6 @@
 #!/bin/bash
 # Use this script to test if a given TCP host/port are available
 
-set -x  # Enables debugging (logs all executed commands)
-
 WAITFORIT_cmdname=${0##*/}
 
 echoerr() { 
@@ -30,7 +28,7 @@ wait_for() {
 
     while true; do
         if [[ $WAITFORIT_ISBUSY -eq 1 ]]; then
-            nc -zv $WAITFORIT_HOST $WAITFORIT_PORT
+            nc -zv $WAITFORIT_HOST $WAITFORIT_PORT >/dev/null 2>&1
             WAITFORIT_result=$?
         else
             (echo -n > /dev/tcp/$WAITFORIT_HOST/$WAITFORIT_PORT) >/dev/null 2>&1
@@ -43,7 +41,6 @@ wait_for() {
             break
         fi
 
-        echoerr "Still waiting for $WAITFORIT_HOST:$WAITFORIT_PORT..."
         sleep 1
     done
 
@@ -83,6 +80,7 @@ if [[ -z "$WAITFORIT_HOST" || -z "$WAITFORIT_PORT" ]]; then
 fi
 
 WAITFORIT_TIMEOUT=${WAITFORIT_TIMEOUT:-15}
+WAITFORIT_ISBUSY=0
 
 echoerr "Connecting to $WAITFORIT_HOST:$WAITFORIT_PORT with timeout $WAITFORIT_TIMEOUT seconds..."
 
