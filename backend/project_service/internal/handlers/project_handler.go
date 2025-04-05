@@ -20,13 +20,13 @@ var userGateway = gateways.UserGatewayInit()
 
 func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var request struct {
+		var projectCreateRequest struct {
 			Name        string `json:"name"`
 			Description string `json:"description"`
 			UserID      int    `json:"user_id"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
 				Message: "Invalid request payload",
@@ -34,7 +34,7 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 			return
 		}
 
-		if request.Name == "" || request.Description == "" || request.UserID == 0 {
+		if projectCreateRequest.Name == "" || projectCreateRequest.Description == "" || projectCreateRequest.UserID == 0 {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
 				Message: "Project name and valid user ID are required",
@@ -42,7 +42,7 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 			return
 		}
 
-		project, err := service.CreateProject(request.Name, request.Description, request.UserID)
+		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID)
 		if err != nil {
 			if err.Error() == "user not found" {
 				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{

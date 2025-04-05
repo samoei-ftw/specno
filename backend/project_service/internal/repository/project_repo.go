@@ -26,15 +26,15 @@ func NewProjectRepository(db *gorm.DB) ProjectRepository {
 }
 
 func (r *projectRepo) Create(project *projectModels.Project) error {
-	if DB == nil {
-		return errors.New("DB connection error.")
+	if r.db == nil {
+		return errors.New("DB connection error in create.")
 	}
 	return r.db.Create(project).Error
 }
 
 func (r *projectRepo) GetByUserID(userID int) ([]projectModels.Project, error) {
 	if DB == nil {
-		return nil, errors.New("DB connection error.")
+		return nil, errors.New("DB connection error in fetch user.")
 	}
 	var projects []projectModels.Project
 	if err := r.db.Where("user_id = ?", userID).Find(&projects).Error; err != nil {

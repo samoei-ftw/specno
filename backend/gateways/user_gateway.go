@@ -26,7 +26,7 @@ type UserGateway struct {
 func UserGatewayInit() *UserGateway {
 	baseURL := os.Getenv("USER_SERVICE_BASE_URL")
 	if baseURL == "" {
-		baseURL = "http://user-api-gateway"
+		baseURL = "http://user-service:8080"
 	}
 
 	return &UserGateway{

@@ -16,10 +16,8 @@ services:
     networks:
       - specno-network
     depends_on:
-      user-service:
-        condition: service_healthy
-      project-service:
-        condition: service_healthy
+      - user-service
+      - project-service
     restart: on-failure  
 
   user-service:
@@ -74,3 +72,7 @@ services:
 
 volumes:
   pgdata:
+
+  networks:
+  specno-network:
+    driver: bridge
