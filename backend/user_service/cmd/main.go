@@ -6,11 +6,12 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-
 	"github.com/rs/cors"
+
 	utils "github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
-	userRepo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/pkg/auth"
+	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
 
@@ -18,20 +19,24 @@ func main() {
 	if err := utils.InitializeDatabase(); err != nil {
 		log.Fatal("DB connection failed:", err)
 	}
-	
+
 	if err := utils.RunMigrations(os.Getenv("DB_MIGRATIONS_DIR")); err != nil {
 		log.Fatal("Migrations failed:", err)
 	}
 
-	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	userRepo := userRepo.NewUserRepository(utils.GetDB())
-    userService := services.NewUserService(userRepo)
+
+	// Dependency injection
+	userRepository := repo.NewUserRepository(utils.GetDB())
+	userService := services.NewUserService(userRepository)
+
+	// Router setup
 	r := mux.NewRouter()
-    // Register routes with handlers, injecting the userService instance
+
+	// Public routes
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		handlers.RegisterHandler(w, r, userService)
 	}).Methods("POST")
@@ -40,22 +45,20 @@ func main() {
 		handlers.LoginHandler(w, r, userService)
 	}).Methods("POST")
 
-	r.HandleFunc("/users/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	// Protected route
+	r.Handle("/users/{id:[0-9]+}", auth.JwtAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handlers.FetchUserHandler(w, r, userService)
-	}).Methods("GET")
-	
-	// Use cors middleware
+	}))).Methods("GET")
+
+	// CORS middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding
+		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: use env var in prod
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
+
 	handler := c.Handler(r)
 
-	// Start the server
-	log.Println("Starting server on port", port)
-	err := http.ListenAndServe(":"+port, handler)
-	if err != nil {
-		log.Fatal("Error starting server:", err)
-	}
+	log.Printf("Server running on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
