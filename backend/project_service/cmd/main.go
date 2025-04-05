@@ -38,10 +38,6 @@ func main() {
 
 	// Setup router
 	r := mux.NewRouter()
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[DEBUG] Fallback route hit: method=%s path=%s", r.Method, r.URL.Path)
-		http.NotFound(w, r)
-	})
 
 	// Protected route
 	r.Handle("/projects", auth.JwtAuthMiddleware(handlers.CreateProjectHandler(projectService))).Methods("POST")

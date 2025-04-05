@@ -19,21 +19,19 @@ var userGateway = gateways.UserGatewayInit()
 
 func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var payload struct {
+		var projectCreateRequest struct {
 			Name        string `json:"name"`
 			Description string `json:"description"`
 			UserID      int    `json:"user_id"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
 			log.Printf("Failed to decode payload: %v", err)
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		log.Printf("Decoded payload: %+v", payload)
-
-		project, err := service.CreateProject(payload.Name, payload.Description, payload.UserID, r)
+		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID, r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
