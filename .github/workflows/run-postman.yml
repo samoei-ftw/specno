@@ -21,9 +21,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    - name: Start Services
-      working-directory: ./backend
-      run: docker-compose up -d
+    - name: Stop and remove containers
+      run: docker-compose -f backend/docker-compose.yml down -v
+      
+    - name: Rebuild and start containers
+      run: docker-compose -f backend/docker-compose.yml up --build -d
 
     - name: Install Newman
       run: npm install -g newman
