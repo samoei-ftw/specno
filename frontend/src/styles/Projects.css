@@ -1,23 +1,103 @@
+/* Projects.css */
 .projects-container {
+    padding: 20px;
+  }
+  
+  .project-box {
+    margin-bottom: 20px;
+  }
+  
+  .create-project-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .create-project-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .projects-list {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .project-block {
+    background-color: #f4f4f4;
+    margin: 10px;
+    padding: 20px;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .project-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  
+  .project-description {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  /* Modal styles */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f7f7f7;
-}
-
-.project-box {
-    padding: 2rem;
+  }
+  
+  .modal-content {
     background-color: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
     text-align: center;
-}
-
-.project-title {
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-}
+  }
+  
+  .project-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .done-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .done-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .close-modal-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .close-modal-btn:hover {
+    background-color: #d32f2f;
+  }
