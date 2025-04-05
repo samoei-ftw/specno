@@ -28,7 +28,7 @@ const Register = () => {
 
     return (
         <div className="register-container">
-            <h1 className="register-title">REGISTER</h1>
+            <h1 className="register-title">Tasko</h1>
             <input
                 type="email"
                 placeholder="Email"
