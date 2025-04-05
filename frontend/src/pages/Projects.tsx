@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAddProject } from "../hooks/usePage"; // make sure the hook path is correct
+import { useAddProject } from "../hooks/usePage";
 import "../styles/Projects.css";
 
 interface Project {
@@ -13,30 +13,34 @@ const Projects: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
 
-  // Use the hook to handle adding projects
-  const { mutate, isError, error, data } = useAddProject(); // Correctly typed hook return
+  const { mutate, isError, error, data} = useAddProject(); 
 
   const handleCreateProject = () => {
     setIsModalOpen(true); 
   };
 
-  const handleSubmitProject = () => {
+  const handleSubmitProject = async () => {
     if (projectName && projectDescription) {
-      const newProject = { name: projectName, description: projectDescription };
-
-      setProjects((prevProjects) => [...prevProjects, newProject]);
-
       const userId = 146; // Replace with dynamic user ID
 
-      mutate({
-        name: projectName,
-        description: projectDescription,
-        userId,
-      });
+      try {
+        // Call mutate and wait for the response
+        await mutate({
+          name: projectName,
+          description: projectDescription,
+          userId,
+        });
 
-      setIsModalOpen(false); 
-      setProjectName(""); 
-      setProjectDescription("");
+        const newProject = { name: projectName, description: projectDescription };
+        setProjects((prevProjects) => [...prevProjects, newProject]);
+
+        // Close modal and reset fields
+        setIsModalOpen(false); 
+        setProjectName(""); 
+        setProjectDescription("");
+      } catch (err) {
+        console.error("Error adding project:", err);
+      }
     }
   };
 
@@ -50,7 +54,6 @@ const Projects: React.FC = () => {
         </button>
       </div>
 
-      {/* Display projects */}
       <div className="projects-list">
         {projects.map((project, index) => (
           <div key={index} className="project-block">
@@ -90,10 +93,8 @@ const Projects: React.FC = () => {
         </div>
       )}
 
-      {/* Error handling */}
       {isError && <p className="error-text">Error: {error?.message}</p>}
 
-      {/* Success message */}
       {data && <p className="success-text">Project added successfully!</p>}
     </div>
   );

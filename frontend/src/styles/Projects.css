@@ -1,52 +1,64 @@
-/* Projects.css */
 .projects-container {
-    padding: 20px;
-  }
-  
-  .project-box {
+    padding: 2rem;
+    background-color: #f4f7fb;
+    min-height: 100vh;
+}
+
+.project-box {
     margin-bottom: 20px;
-  }
-  
-  .create-project-btn {
+}
+
+.create-project-btn {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  .create-project-btn:hover {
+    transition: background-color 0.3s ease;
+}
+
+.create-project-btn:hover {
     background-color: #45a049;
-  }
-  
-  .projects-list {
+}
+
+.projects-list {
     display: flex;
     flex-wrap: wrap;
-  }
-  
-  .project-block {
-    background-color: #f4f4f4;
+    gap: 20px;
+    justify-content: center;
+}
+
+.project-block {
+    background-color: #fff;
     margin: 10px;
     padding: 20px;
-    border-radius: 8px;
-    width: 200px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .project-title {
-    font-size: 18px;
+    border-radius: 10px;
+    width: 250px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.project-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.project-title {
+    font-size: 1.25rem;
     margin-bottom: 8px;
-  }
-  
-  .project-description {
+    color: #333;
+    font-weight: bold;
+}
+
+.project-description {
     font-size: 14px;
     color: #555;
-  }
-  
-  /* Modal styles */
-  .modal {
+    line-height: 1.4;
+}
+
+.modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -56,48 +68,52 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .modal-content {
+}
+
+.modal-content {
     background-color: white;
-    padding: 20px;
+    padding: 30px;
     border-radius: 10px;
     width: 400px;
     text-align: center;
-  }
-  
-  .project-input {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.project-input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     margin: 10px 0;
     border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .done-btn {
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.done-btn {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  .done-btn:hover {
+    transition: background-color 0.3s ease;
+}
+
+.done-btn:hover {
     background-color: #45a049;
-  }
-  
-  .close-modal-btn {
+}
+
+.close-modal-btn {
     background-color: #f44336;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  .close-modal-btn:hover {
+    transition: background-color 0.3s ease;
+}
+
+.close-modal-btn:hover {
     background-color: #d32f2f;
-  }
+}

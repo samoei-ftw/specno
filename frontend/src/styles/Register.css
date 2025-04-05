@@ -3,6 +3,7 @@ body, html, #root {
     padding: 0;
     height: 100%;
     width: 100%;
+    font-family: 'Roboto', sans-serif;
 }
 
 .register-container {
@@ -11,20 +12,24 @@ body, html, #root {
     align-items: center;
     justify-content: center;
     height: 100vh;
-    width: 100vw;
-    background-color: #0000; 
     padding: 20px;
+    background-color: #f4f7fb;
 }
 
 .register-container > * {
     max-width: 400px;
     width: 100%;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .register-title {
     font-size: 2.5rem;
     margin-bottom: 24px;
     font-weight: bold;
+    color: #333;
     text-align: center;
 }
 
@@ -44,14 +49,14 @@ body, html, #root {
     margin-top: 20px;
     border: none;
     border-radius: 8px;
-    background-color: #333;
+    background-color: #4CAF50;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-.fade-button.hover {
-    background-color: #555;
+.fade-button:hover {
+    background-color: #45a049;
 }
 
 .error-text {

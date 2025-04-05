@@ -1,7 +1,6 @@
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { addProjectToUserAPI } from "../api/project";
 
-// Define the project type for better typing
 interface AddProjectParams {
   name: string;
   description: string;
