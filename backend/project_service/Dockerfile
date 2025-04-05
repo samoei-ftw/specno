@@ -28,4 +28,4 @@ WORKDIR /
 RUN chmod +x ./wait-for-it.sh
 
 EXPOSE 8082
-CMD ["bash", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
+CMD ["bash", "-c", "./wait-for-it.sh user-service:8080 -- /project-api -run-migrations=false"]

@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 var DB *gorm.DB
-// InitializeDatabase sets up the database connection and runs migrations
+// sets up the database connection
 func InitializeDatabase() error {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
@@ -27,14 +27,19 @@ func InitializeDatabase() error {
 		log.Fatalf("Failed to connect to the database: %v", err)
 		return err
 	}
+	return nil
+}
 
-	// Run migrations
+
+func RunMigrations(migrationsDir string) error {
+	log.Println("Running migrations...")
+	var err error
 	if err = DB.AutoMigrate(&models.User{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 		return err
 	}
 
-	log.Println("✅ Database connection successfully established")
+	log.Println("Database connection successfully established.")
 	return nil
 }
 

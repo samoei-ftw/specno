@@ -8,15 +8,19 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/rs/cors"
-	repo "github.com/samoei-ftw/specno/backend/common/utils"
+	utils "github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
 	userRepo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
 
 func main() {
-	if err := repo.InitializeDatabase(); err != nil {
-		log.Fatal("Database initialization failed:", err)
+	if err := utils.InitializeDatabase(); err != nil {
+		log.Fatal("DB connection failed:", err)
+	}
+	
+	if err := utils.RunMigrations(os.Getenv("DB_MIGRATIONS_DIR")); err != nil {
+		log.Fatal("Migrations failed:", err)
 	}
 
 	// Start the server
@@ -24,7 +28,7 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	userRepo := userRepo.NewUserRepository(repo.GetDB())
+	userRepo := userRepo.NewUserRepository(utils.GetDB())
     userService := services.NewUserService(userRepo)
 	r := mux.NewRouter()
     // Register routes with handlers, injecting the userService instance

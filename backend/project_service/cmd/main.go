@@ -21,8 +21,9 @@ import (
 
 func main() {
 	if err := utils.InitializeDatabase(); err != nil {
-		log.Fatal("Database initialization failed:", err)
+		log.Fatal("DB connection failed:", err)
 	}
+	// No migrations here
 
 	// Start the server
 	port := os.Getenv("PORT")

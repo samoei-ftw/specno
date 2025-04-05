@@ -2,6 +2,7 @@ version: "3.8"
 
 networks:
   specno-network:
+    external: true  
     driver: bridge
 
 services:
@@ -34,12 +35,11 @@ services:
       DB_NAME: postgres
       DB_PORT: 5432
       DB_VOLUME: pgdata
-      DB_MIGRATIONS_DIR: ./database
       JWT_SECRET: secret-key
       DB_CONTAINER_NAME: tasko-database
     ports:
       - "8080:8080"
-    command: ["/bin/sh", "-c", "./wait-for-it.sh tasko-database:5432 -- /user-api"]
+    command: ["/user-api"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
@@ -59,7 +59,6 @@ services:
       DB_NAME: postgres
       DB_PORT: 5432
       DB_VOLUME: pgdata
-      DB_MIGRATIONS_DIR: ./database
       JWT_SECRET: secret-key
       DB_CONTAINER_NAME: tasko-database
     ports:

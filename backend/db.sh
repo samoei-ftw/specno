@@ -10,7 +10,13 @@ if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
-docker stop $DB_CONTAINER_NAME && docker rm $DB_CONTAINER_NAME
+if ! docker network ls | grep -q "$DOCKER_NETWORK"; then
+    echo "Creating Docker network: $DOCKER_NETWORK"
+    docker network create "$DOCKER_NETWORK"
+fi
+
+docker stop $DB_CONTAINER_NAME 2>/dev/null
+docker rm $DB_CONTAINER_NAME 2>/dev/null
 
 docker run -d \
     --name $DB_CONTAINER_NAME \

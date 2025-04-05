@@ -28,4 +28,4 @@ RUN chmod +x /user-api
 
 EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "./wait-for-it.sh tasko-database:5432 -- /user-api"]
+CMD ["/user-api"]
