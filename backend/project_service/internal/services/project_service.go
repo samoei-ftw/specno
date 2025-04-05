@@ -48,6 +48,5 @@ func (s *ProjectService) CreateProject(name, description string, userId int, r *
 		log.Printf("Error creating project: %v", err)
 		return nil, errors.New("failed to create project")
 	}
-	log.Printf("Break point 2 - Created project: %+v", project)
 	return project, nil
 }

@@ -26,11 +26,13 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-			log.Printf("Decoded payload: %+v", payload)
+			log.Printf("Failed to decode payload: %v", err)
 			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
+
 		log.Printf("Decoded payload: %+v", payload)
+
 		project, err := service.CreateProject(payload.Name, payload.Description, payload.UserID, r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

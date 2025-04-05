@@ -5,8 +5,6 @@ import (
 
 	projectModels "github.com/samoei-ftw/specno/backend/project_service/internal/models"
 
-	"log"
-
 	"gorm.io/gorm"
 )
 
@@ -26,11 +24,9 @@ func NewProjectRepository(db *gorm.DB) ProjectRepository {
 }
 
 func (r *projectRepo) Create(project *projectModels.Project) error {
-	log.Printf("Break point 3 - inserting project: %+v", project)
 	if r.db == nil {
 		return errors.New("DB connection error in create.")
 	}
-	log.Printf("Break point 4")
 	return r.db.Create(project).Error
 }
 

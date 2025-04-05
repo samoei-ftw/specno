@@ -26,7 +26,7 @@ func main() {
 		log.Fatal("DB connection failed:", err)
 	}
 
-	// Server port
+	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8082"
@@ -36,13 +36,15 @@ func main() {
 	projectRepo := repo.NewProjectRepository(utils.GetDB())
 	projectService := services.NewProjectService(projectRepo)
 
-	// Router
+	// Setup router
 	r := mux.NewRouter()
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("[DEBUG] Fallback route hit: method=%s path=%s", r.Method, r.URL.Path)
+		http.NotFound(w, r)
+	})
 
 	// Protected route
-	r.Handle("/projects", auth.JwtAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateProjectHandler(projectService)
-	}))).Methods("POST")
+	r.Handle("/projects", auth.JwtAuthMiddleware(handlers.CreateProjectHandler(projectService))).Methods("POST")
 
 	// CORS middleware
 	c := cors.New(cors.Options{
