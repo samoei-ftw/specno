@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRegister } from "../hooks/useRegister";
+import { useNavigate } from "react-router-dom";
 import "../styles/Register.css";
 
 const FadeButton: React.FC<{ title: string; onClick: () => void }> = ({ title, onClick }) => {
@@ -18,12 +19,17 @@ const FadeButton: React.FC<{ title: string; onClick: () => void }> = ({ title, o
 };
 
 const Register = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { mutate, isPending, error, data } = useRegister();
 
     const handleSubmit = () => {
         mutate({ email, password });
+    };
+
+    const handleLogin = () => {
+        navigate("/projects");
     };
 
     return (
@@ -44,6 +50,7 @@ const Register = () => {
                 className="register-input"
             />
             <FadeButton title={isPending ? "Registering..." : "Register"} onClick={handleSubmit} />
+            <FadeButton title="Login" onClick={handleLogin} />
             {error && <p className="error-text">Error: {error.message}</p>}
             {data && <p className="success-text">Registered successfully!</p>}
         </div>
