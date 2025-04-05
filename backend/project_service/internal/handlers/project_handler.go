@@ -8,11 +8,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
-
-	"github.com/samoei-ftw/specno/backend/common/utils"
 
 	"github.com/samoei-ftw/specno/backend/gateways"
 )
@@ -20,48 +19,26 @@ var userGateway = gateways.UserGatewayInit()
 
 func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var projectCreateRequest struct {
+		var payload struct {
 			Name        string `json:"name"`
 			Description string `json:"description"`
 			UserID      int    `json:"user_id"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Invalid request payload",
-			})
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			log.Printf("Decoded payload: %+v", payload)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
-
-		if projectCreateRequest.Name == "" || projectCreateRequest.Description == "" || projectCreateRequest.UserID == 0 {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Project name and valid user ID are required",
-			})
-			return
-		}
-
-		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID)
+		log.Printf("Decoded payload: %+v", payload)
+		project, err := service.CreateProject(payload.Name, payload.Description, payload.UserID, r)
 		if err != nil {
-			if err.Error() == "user not found" {
-				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
-					Status:  "error",
-					Message: "User not found",
-				})
-				return
-			}
-			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-				Status:  "error",
-				Message: "Failed to create project",
-			})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		utils.RespondWithJSON(w, http.StatusCreated, utils.Response{
-			Status: "success",
-			Data:   project,
-		})
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(project)
 	}
 }
 

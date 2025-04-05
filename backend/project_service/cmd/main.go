@@ -13,6 +13,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+
+	"github.com/samoei-ftw/specno/backend/common/pkg/auth"
 	"github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
 	repo "github.com/samoei-ftw/specno/backend/project_service/internal/repository"
@@ -24,30 +26,35 @@ func main() {
 		log.Fatal("DB connection failed:", err)
 	}
 
-	// Start the server
+	// Server port
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8082"
 	}
-	projectRepo := repo.NewProjectRepository(utils.GetDB())
 
-	// Initialize project service with the repository
+	// Dependencies
+	projectRepo := repo.NewProjectRepository(utils.GetDB())
 	projectService := services.NewProjectService(projectRepo)
 
-	// Setup router
+	// Router
 	r := mux.NewRouter()
-	r.HandleFunc("/projects", handlers.CreateProjectHandler(projectService)).Methods("POST")
-	// Use cors middleware
+
+	// Protected route
+	r.Handle("/projects", auth.JwtAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handlers.CreateProjectHandler(projectService)
+	}))).Methods("POST")
+
+	// CORS middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding
+		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: pull from env
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 
 	handler := c.Handler(r)
 
-	// Start the server
-	log.Println("Starting server on port", port)
+	// Start server
+	log.Println("Starting project service on port", port)
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Error starting server:", err)
 	}

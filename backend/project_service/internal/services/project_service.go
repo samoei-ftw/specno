@@ -9,6 +9,7 @@ package services
 import (
 	"errors"
 	"log"
+	"net/http"
 
 	"github.com/samoei-ftw/specno/backend/gateways"
 	"github.com/samoei-ftw/specno/backend/project_service/internal/models"
@@ -16,7 +17,6 @@ import (
 )
 var (
 	userGateway = gateways.UserGatewayInit()
-	//projectRepo = gateways.ProjectGatewayInit()
 )
 type ProjectService struct {
 	repo repository.ProjectRepository
@@ -25,10 +25,11 @@ type ProjectService struct {
 func NewProjectService(repo repository.ProjectRepository) *ProjectService {
 	return &ProjectService{repo: repo}
 }
+
 // Creates a project for a user
-func (s *ProjectService) CreateProject(name, description string, userId int) (*models.Project, error) {
+func (s *ProjectService) CreateProject(name, description string, userId int, r *http.Request) (*models.Project, error) {
 	// Validate user
-	user, err := userGateway.GetUserByID(userId)
+	user, err := userGateway.GetUserByID(userId, r)
 	if err != nil {
 		log.Printf("Error fetching user %d: %v", userId, err)
 		if err.Error() == "user not found" {
@@ -36,6 +37,8 @@ func (s *ProjectService) CreateProject(name, description string, userId int) (*m
 		}
 		return nil, errors.New("failed to retrieve user")
 	}
+	log.Printf("Retrieved user. user_id: %d", user.ID)
+
 	project := &models.Project{
 		Name:        name,
 		Description: description,
@@ -45,6 +48,6 @@ func (s *ProjectService) CreateProject(name, description string, userId int) (*m
 		log.Printf("Error creating project: %v", err)
 		return nil, errors.New("failed to create project")
 	}
-
+	log.Printf("Break point 2 - Created project: %+v", project)
 	return project, nil
 }

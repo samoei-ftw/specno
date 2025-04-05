@@ -8,9 +8,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 
+	"github.com/samoei-ftw/specno/backend/common/pkg/auth"
 	utils "github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
-	"github.com/samoei-ftw/specno/backend/user_service/internal/pkg/auth"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
@@ -45,7 +45,7 @@ func main() {
 		handlers.LoginHandler(w, r, userService)
 	}).Methods("POST")
 
-	// Protected route
+	// Protected routes
 	r.Handle("/users/{id:[0-9]+}", auth.JwtAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handlers.FetchUserHandler(w, r, userService)
 	}))).Methods("GET")
