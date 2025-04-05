@@ -5,8 +5,6 @@ import (
 
 	projectModels "github.com/samoei-ftw/specno/backend/project_service/internal/models"
 
-	//commonModels "github.com/samoei-ftw/specno/backend/common/models"
-
 	"gorm.io/gorm"
 )
 

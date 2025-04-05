@@ -38,10 +38,20 @@ func UserGatewayInit() *UserGateway {
 }
 
 // GetUserByID fetches a user by ID from the User Service.
-func (g *UserGateway) GetUserByID(userID int) (*models.User, error) {
+func (g *UserGateway) GetUserByID(userID int, incomingRequest *http.Request) (*models.User, error) {
 	url := fmt.Sprintf("%s/users/%d", g.BaseURL, userID)
 
-	resp, err := g.HTTPClient.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create request: %w", err)
+	}
+
+	// Propagate the Authorization header (Bearer token)
+	if authHeader := incomingRequest.Header.Get("Authorization"); authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+
+	resp, err := g.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Gateway error: %w", err)
 	}

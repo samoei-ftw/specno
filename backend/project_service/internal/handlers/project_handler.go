@@ -8,11 +8,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
-
-	"github.com/samoei-ftw/specno/backend/common/utils"
 
 	"github.com/samoei-ftw/specno/backend/gateways"
 )
@@ -27,41 +26,19 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Invalid request payload",
-			})
+			log.Printf("Failed to decode payload: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		if projectCreateRequest.Name == "" || projectCreateRequest.Description == "" || projectCreateRequest.UserID == 0 {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Project name and valid user ID are required",
-			})
-			return
-		}
-
-		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID)
+		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID, r)
 		if err != nil {
-			if err.Error() == "user not found" {
-				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
-					Status:  "error",
-					Message: "User not found",
-				})
-				return
-			}
-			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-				Status:  "error",
-				Message: "Failed to create project",
-			})
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		utils.RespondWithJSON(w, http.StatusCreated, utils.Response{
-			Status: "success",
-			Data:   project,
-		})
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(project)
 	}
 }
 
