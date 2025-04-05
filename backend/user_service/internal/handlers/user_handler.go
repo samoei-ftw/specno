@@ -16,22 +16,22 @@ import (
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
-	var dto struct {
+	var userReqisterRequest struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&userReqisterRequest); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	if dto.Email == "" || dto.Password == "" {
+	if userReqisterRequest.Email == "" || userReqisterRequest.Password == "" {
 		http.Error(w, "Email and password are required", http.StatusBadRequest)
 		return
 	}
 
-	userID, err := service.RegisterUser(dto.Email, dto.Password)
+	userID, err := service.RegisterUser(userReqisterRequest.Email, userReqisterRequest.Password)
 	if err != nil {
 		http.Error(w, "Registration failed", http.StatusInternalServerError)
 		return

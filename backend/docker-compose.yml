@@ -1,4 +1,9 @@
-version: '3.8'
+version: "3.8"
+
+networks:
+  specno-network:
+    external: true  
+    driver: bridge
 
 services:
   nginx:
@@ -8,12 +13,66 @@ services:
       - "8081:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - specno-network
     depends_on:
       - user-service
+      - project-service
+    restart: on-failure  
 
   user-service:
     build:
-      context: ./user_service
+      context: ./ 
+      dockerfile: user_service/Dockerfile
     container_name: user-service
+    networks:
+      - specno-network
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: postgres
+      DB_PORT: 5432
+      DB_VOLUME: pgdata
+      JWT_SECRET: secret-key
+      DB_CONTAINER_NAME: tasko-database
     ports:
       - "8080:8080"
+    command: ["/user-api"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  project-service:
+    build:
+      context: ./ 
+      dockerfile: project_service/Dockerfile
+    container_name: project-service
+    networks:
+      - specno-network
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: postgres
+      DB_PORT: 5432
+      DB_VOLUME: pgdata
+      JWT_SECRET: secret-key
+      DB_CONTAINER_NAME: tasko-database
+    ports:
+      - "8082:8082"
+    depends_on:
+      - user-service
+    command: ["bash", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pgdata:
+
+  networks:
+  specno-network:
+    driver: bridge

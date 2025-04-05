@@ -16,7 +16,8 @@ import (
 	"time"
 
 	"github.com/samoei-ftw/specno/backend/common/models"
-	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
+	repo "github.com/samoei-ftw/specno/backend/common/utils"
+	user_repo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
 	"golang.org/x/crypto/bcrypt"
 
@@ -95,7 +96,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch user by email using the UserService
 	// Pass the repo as the interface type
-	userRepo := repo.NewUserRepository(repo.GetDB())
+	userRepo := user_repo.NewUserRepository(repo.GetDB())
     userService := services.NewUserService(userRepo)
 	user, err := userService.GetUserByEmail(credentials.Email)
 	if err != nil {
