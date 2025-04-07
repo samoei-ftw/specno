@@ -16,25 +16,36 @@ const Projects: React.FC = () => {
   const { mutateAsync, isError, error, data } = useAddProject();
 
   const handleCreateProject = () => {
-    setIsModalOpen(true); 
+    setIsModalOpen(true);
   };
 
   const handleSubmitProject = async () => {
     if (projectName && projectDescription) {
-      const userId = 146;
-  
+      const userId = 146; // You can dynamically get this value as needed
+
       try {
-        await mutateAsync({
+        const newProject = {
           name: projectName,
           description: projectDescription,
           userId,
-        });
-  
+        };
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found, cannot add project.");
+          return;
+        }
+
+        // Call mutateAsync with new project
+        const response = await mutateAsync(newProject);
+
+        console.log("Project added successfully:", response);
         setProjects((prev) => [...prev, { name: projectName, description: projectDescription }]);
         setIsModalOpen(false);
         setProjectName("");
         setProjectDescription("");
       } catch (err) {
+        // Log the error for debugging
         console.error("Error adding project:", err);
       }
     }
@@ -81,7 +92,7 @@ const Projects: React.FC = () => {
             </button>
             <button
               className="close-modal-btn"
-              onClick={() => setIsModalOpen(false)} 
+              onClick={() => setIsModalOpen(false)}
             >
               Cancel
             </button>
