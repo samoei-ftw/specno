@@ -13,7 +13,7 @@ const Projects: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
 
-  const { mutate, isError, error, data} = useAddProject(); 
+  const { mutateAsync, isError, error, data } = useAddProject();
 
   const handleCreateProject = () => {
     setIsModalOpen(true); 
@@ -21,22 +21,18 @@ const Projects: React.FC = () => {
 
   const handleSubmitProject = async () => {
     if (projectName && projectDescription) {
-      const userId = 146; // Replace with dynamic user ID
-
+      const userId = 146;
+  
       try {
-        // Call mutate and wait for the response
-        await mutate({
+        await mutateAsync({
           name: projectName,
           description: projectDescription,
           userId,
         });
-
-        const newProject = { name: projectName, description: projectDescription };
-        setProjects((prevProjects) => [...prevProjects, newProject]);
-
-        // Close modal and reset fields
-        setIsModalOpen(false); 
-        setProjectName(""); 
+  
+        setProjects((prev) => [...prev, { name: projectName, description: projectDescription }]);
+        setIsModalOpen(false);
+        setProjectName("");
         setProjectDescription("");
       } catch (err) {
         console.error("Error adding project:", err);

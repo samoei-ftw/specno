@@ -1,0 +1,24 @@
+.dashboard-container {
+    padding: 20px;
+  }
+  
+  .swimlanes {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .swimlane {
+    flex: 1;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .task-card {
+    background-color: white;
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }

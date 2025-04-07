@@ -1,15 +1,32 @@
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import { addProjectToUserAPI } from "../api/project";
+import axios, { AxiosResponse } from "axios";
 
-interface AddProjectParams {
+interface NewProject {
   name: string;
   description: string;
   userId: number;
 }
 
-export const useAddProject = (): UseMutationResult<any, Error, AddProjectParams> => {
-  return useMutation({
-    mutationFn: ({ name, description, userId }: AddProjectParams) =>
-      addProjectToUserAPI(name, description, userId),
+// Define the mutation function separately
+const addProject = (newProject: NewProject): Promise<AxiosResponse<NewProject>> => {
+  const token = localStorage.getItem("token");
+
+  return axios.post("/api/projects", newProject, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 };
+
+export const useAddProject = () =>
+  useMutation<AxiosResponse<NewProject>, Error, NewProject>({
+    mutationFn: (newProject: NewProject) => {
+      const token = localStorage.getItem("token");
+
+      return axios.post("/api/projects", newProject, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    },
+  });
