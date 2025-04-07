@@ -1,21 +1,21 @@
 import React, { useState } from "react";
-import { useAddProject } from "../hooks/usePage";
+import { useAddProject, useFetchProject } from "../hooks/useProject";
 import { useNavigate } from "react-router-dom";
+import { User } from "../models/User";
+import { Project } from "../models/Project"; 
 import "../styles/Projects.css";
 
-interface Project {
-  name: string;
-  description: string;
-}
-
 const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>([]); // project states
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // toggle modal visibility
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
 
-  const { mutateAsync, isError, error, data } = useAddProject();
+  const { data: fetchedProjects } = useFetchProject();
+  const { mutateAsync } = useAddProject(); 
   const navigate = useNavigate();
+
+  // TODO: fetch user
+  const user: User = { id: 146, name: "Jane" }; 
 
   const handleCreateProject = () => {
     setIsModalOpen(true);
@@ -23,45 +23,27 @@ const Projects: React.FC = () => {
 
   const handleSubmitProject = async () => {
     if (projectName && projectDescription) {
-      const userId = 146; // TODO: dynamic
-
       try {
         const newProject = {
           name: projectName,
           description: projectDescription,
-          userId,
+          userId: user.id,
         };
 
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found, cannot add project.");
-          return;
-        }
-
-        // Call mutateAsync with new project
-        const response = await mutateAsync(newProject);
-
-        console.log("Project added successfully:", response);
-      setProjects((prev) => [
-        ...prev,
-        { name: projectName, description: projectDescription },
-      ]);
-      setIsModalOpen(false);
-      setProjectName("");
-      setProjectDescription("");
-
-      if (data) {
-        navigate(`/task-dashboard/id`); // TODO: response.id
+        await mutateAsync(newProject); 
+        setIsModalOpen(false); 
+        setProjectName(""); 
+        setProjectDescription("");
+        //await refetch();
+      } catch (err) {
+        console.error("Error adding project:", err);
       }
-    } catch (err) {
-      console.error("Error adding project:", err);
     }
-  }
-};
+  };
 
   return (
     <div className="projects-container">
-      <h1>My Projects</h1>
+      <h1>{user.name}'s Projects</h1>
 
       <div className="project-box">
         <button className="create-project-btn" onClick={handleCreateProject}>
@@ -70,9 +52,15 @@ const Projects: React.FC = () => {
       </div>
 
       <div className="projects-list">
-        {projects.map((project, index) => (
-          <div key={index} className="project-block">
-            <h3>{project.name}</h3>
+        {fetchedProjects?.sort((a: { created_at: string | number | Date; }, b: { created_at: string | number | Date; }) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ).map((project: Project) => ( 
+          <div
+            key={project.id}
+            className="project-card"
+            onClick={() => navigate(`/task-dashboard/${project.id}`)} 
+          >
+            <h2>{project.name}</h2>
             <p>{project.description}</p>
           </div>
         ))}
@@ -84,33 +72,19 @@ const Projects: React.FC = () => {
             <h2>Create New Project</h2>
             <input
               type="text"
-              placeholder="Project Name"
+              placeholder="Project name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="project-input"
             />
             <textarea
-              placeholder="Project Description"
+              placeholder="Project description"
               value={projectDescription}
               onChange={(e) => setProjectDescription(e.target.value)}
-              className="project-input"
             />
-            <button className="done-btn" onClick={handleSubmitProject}>
-              Done
-            </button>
-            <button
-              className="close-modal-btn"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Cancel
-            </button>
+            <button onClick={handleSubmitProject}>Submit</button>
           </div>
         </div>
       )}
-
-      {isError && <p className="error-text">Error: {error?.message}</p>}
-
-      {data && <p className="success-text">Project added successfully!</p>}
     </div>
   );
 };
