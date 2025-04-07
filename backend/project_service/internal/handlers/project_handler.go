@@ -23,7 +23,7 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 		var projectCreateRequest struct {
 			Name        string `json:"name"`
 			Description string `json:"description"`
-			UserID      int    `json:"user_id"`
+			UserID      uint    `json:"user_id"`
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
@@ -65,3 +65,38 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	}
 }
 
+func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request){
+		var projectGetRequest struct{
+			UserID      uint    `json:"user_id"`
+		}
+	
+	if err:= json.NewDecoder(r.Body).Decode(&projectGetRequest); err != nil {
+		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+			Status:  "error",
+			Message: "Invalid request payload",
+		})
+		return
+	}
+
+	projects, err:= service.ListProjects(projectGetRequest.UserID)
+	if err != nil {
+		if err.Error() == "error to do" {
+			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
+				Status:  "error",
+				Message: "error to do",
+			})
+			return
+		}
+		utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+			Status:  "error",
+			Message: "error to do",
+		})
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+		Status: "success",
+		Data:   projects,
+	})
+}
+}

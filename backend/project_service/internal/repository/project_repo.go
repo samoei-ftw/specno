@@ -4,17 +4,12 @@ import (
 	"errors"
 
 	projectModels "github.com/samoei-ftw/specno/backend/project_service/internal/models"
-
-	//commonModels "github.com/samoei-ftw/specno/backend/common/models"
-
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
 type ProjectRepository interface {
 	Create(project *projectModels.Project) error
-	GetByUserID(userID int) ([]projectModels.Project, error)
+	GetByUserID(userID uint) ([]projectModels.Project, error)
 }
 
 type projectRepo struct {
@@ -32,10 +27,11 @@ func (r *projectRepo) Create(project *projectModels.Project) error {
 	return r.db.Create(project).Error
 }
 
-func (r *projectRepo) GetByUserID(userID int) ([]projectModels.Project, error) {
-	if DB == nil {
+func (r *projectRepo) GetByUserID(userID uint) ([]projectModels.Project, error) {
+	if r.db == nil {
 		return nil, errors.New("DB connection error in fetch user.")
 	}
+
 	var projects []projectModels.Project
 	if err := r.db.Where("user_id = ?", userID).Find(&projects).Error; err != nil {
 		return nil, err

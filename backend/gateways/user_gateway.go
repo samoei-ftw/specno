@@ -38,7 +38,7 @@ func UserGatewayInit() *UserGateway {
 }
 
 // GetUserByID fetches a user by ID from the User Service.
-func (g *UserGateway) GetUserByID(userID int) (*models.User, error) {
+func (g *UserGateway) GetUserByID(userID uint) (*models.User, error) {
 	url := fmt.Sprintf("%s/users/%d", g.BaseURL, userID)
 
 	resp, err := g.HTTPClient.Get(url)

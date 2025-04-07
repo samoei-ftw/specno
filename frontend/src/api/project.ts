@@ -14,3 +14,11 @@ export const addProjectToUserAPI = async (
   });
   return response.data;
 };
+
+
+export const fetchProjects = async (
+    user_id: number
+  ) => {
+    const response = await axios.post(`${API_URL}/projects?user_id=${user_id}`);
+    return response.data;
+  };
