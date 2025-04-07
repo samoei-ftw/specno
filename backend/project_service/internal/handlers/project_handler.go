@@ -9,7 +9,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
 
 	"github.com/samoei-ftw/specno/backend/common/utils"
@@ -66,37 +68,41 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 }
 
 func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request){
-		var projectGetRequest struct{
-			UserID      uint    `json:"user_id"`
-		}
-	
-	if err:= json.NewDecoder(r.Body).Decode(&projectGetRequest); err != nil {
-		utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-			Status:  "error",
-			Message: "Invalid request payload",
-		})
-		return
-	}
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	projects, err:= service.ListProjects(projectGetRequest.UserID)
-	if err != nil {
-		if err.Error() == "error to do" {
-			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
+		vars := mux.Vars(r) 
+		userIdStr := vars["user_id"] 
+
+		// Check if user_id is provided
+		if userIdStr == "" {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "error to do",
+				Message: "Missing user_id path parameter",
 			})
 			return
 		}
-		utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-			Status:  "error",
-			Message: "error to do",
+
+		userId, err := strconv.ParseUint(userIdStr, 10, 32)
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid user_id format",
+			})
+			return
+		}
+
+		// Call the service to fetch the projects
+		projects, err := service.ListProjects(uint(userId))
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: "Failed to retrieve projects",
+			})
+			return
+		}
+		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+			Status: "success",
+			Data:   projects,
 		})
-		return
 	}
-	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
-		Status: "success",
-		Data:   projects,
-	})
-}
 }
