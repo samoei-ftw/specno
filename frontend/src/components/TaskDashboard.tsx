@@ -24,11 +24,13 @@ const TaskDashboard: React.FC<TaskDashboardProps> = ({ projectName, initialTasks
         {["to-do", "in-progress", "done"].map((lane) => (
           <div key={lane} className="swimlane">
             <h2>{lane.replace("-", " ").toUpperCase()}</h2>
-            {groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
-              <div key={task.id} className="task-card">
-                {task.title}
-              </div>
-            ))}
+            <div className="tasks">
+              {groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
+                <div key={task.id} className="task-card">
+                  {task.title}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>

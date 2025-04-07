@@ -1,24 +1,76 @@
+
 .dashboard-container {
     padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    min-height: 100vh; 
+  }
+  
+  h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
   }
   
   .swimlanes {
     display: flex;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
+    width: 75%;
+    margin: 0 auto;
   }
   
   .swimlane {
-    flex: 1;
-    background-color: #f2f2f2;
-    padding: 10px;
+    background-color: #ffffff;
     border-radius: 8px;
+    flex-grow: 1;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 250px;
+  }
+  
+  .swimlane h2 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+  }
+  
+  .tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   
   .task-card {
-    background-color: white;
-    margin: 8px 0;
-    padding: 8px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background-color: #e3e3e3;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+  }
+  
+  .task-card:hover {
+    background-color: #d0d0d0;
+  }
+  
+  .task-card::before {
+    content: "• ";
+    color: #0073e6;
+    font-weight: bold;
+  }
+  
+
+  @media (max-width: 768px) {
+    .swimlanes {
+      flex-direction: column;
+      width: 100%;
+      gap: 10px;
+    }
+  
+    .swimlane {
+      width: 100%;
+    }
   }

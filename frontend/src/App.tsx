@@ -11,7 +11,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Register />} />
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/dashboard" element={<TaskDashboardWrapper />} />
+                <Route path="/task-dashboard/id" element={<TaskDashboard projectName={""} initialTasks={[]} />} />
             </Routes>
         </Router>
     );

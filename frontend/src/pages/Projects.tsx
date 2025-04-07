@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAddProject } from "../hooks/usePage";
+import { useNavigate } from "react-router-dom";
 import "../styles/Projects.css";
 
 interface Project {
@@ -14,6 +15,7 @@ const Projects: React.FC = () => {
   const [projectDescription, setProjectDescription] = useState<string>("");
 
   const { mutateAsync, isError, error, data } = useAddProject();
+  const navigate = useNavigate();
 
   const handleCreateProject = () => {
     setIsModalOpen(true);
@@ -21,7 +23,7 @@ const Projects: React.FC = () => {
 
   const handleSubmitProject = async () => {
     if (projectName && projectDescription) {
-      const userId = 146; // You can dynamically get this value as needed
+      const userId = 146; // TODO: dynamic
 
       try {
         const newProject = {
@@ -40,16 +42,22 @@ const Projects: React.FC = () => {
         const response = await mutateAsync(newProject);
 
         console.log("Project added successfully:", response);
-        setProjects((prev) => [...prev, { name: projectName, description: projectDescription }]);
-        setIsModalOpen(false);
-        setProjectName("");
-        setProjectDescription("");
-      } catch (err) {
-        // Log the error for debugging
-        console.error("Error adding project:", err);
+      setProjects((prev) => [
+        ...prev,
+        { name: projectName, description: projectDescription },
+      ]);
+      setIsModalOpen(false);
+      setProjectName("");
+      setProjectDescription("");
+
+      if (data) {
+        navigate(`/task-dashboard/id`); // TODO: response.id
       }
+    } catch (err) {
+      console.error("Error adding project:", err);
     }
-  };
+  }
+};
 
   return (
     <div className="projects-container">
