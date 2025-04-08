@@ -1,4 +1,4 @@
-import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useQuery, useMutation, UseMutationResult } from "@tanstack/react-query";
 import axios, { AxiosResponse } from "axios";
 import { addProjectToUserAPI } from "../api/project";
 import { fetchProjects as fetchProjectsAPI } from "../api/project";
@@ -16,8 +16,9 @@ interface NewProject {
     });
 };
 
-export const useFetchProject = () => {
-  return useMutation({
-    mutationFn: ({ userId }: { userId: number }) => fetchProjectsAPI(userId),
+export const useFetchProject = (userId: number) => {
+  return useQuery({
+    queryKey: ["projects", userId],
+    queryFn: () => fetchProjectsAPI(userId),
   });
 };

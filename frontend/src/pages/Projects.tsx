@@ -9,13 +9,13 @@ const Projects: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [projectName, setProjectName] = useState<string>("");
   const [projectDescription, setProjectDescription] = useState<string>("");
-
-  const { data: fetchedProjects } = useFetchProject();
+  // TODO: fetch user
+  const user: User = { id: 148, name: "Jane" }; 
+  const { data: fetchedProjects, refetch } = useFetchProject(user.id);
   const { mutateAsync } = useAddProject(); 
   const navigate = useNavigate();
 
-  // TODO: fetch user
-  const user: User = { id: 146, name: "Jane" }; 
+
 
   const handleCreateProject = () => {
     setIsModalOpen(true);
@@ -34,7 +34,7 @@ const Projects: React.FC = () => {
         setIsModalOpen(false); 
         setProjectName(""); 
         setProjectDescription("");
-        //await refetch();
+        await refetch();
       } catch (err) {
         console.error("Error adding project:", err);
       }
@@ -52,18 +52,18 @@ const Projects: React.FC = () => {
       </div>
 
       <div className="projects-list">
-        {fetchedProjects?.sort((a: { created_at: string | number | Date; }, b: { created_at: string | number | Date; }) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ).map((project: Project) => ( 
-          <div
-            key={project.id}
-            className="project-card"
-            onClick={() => navigate(`/task-dashboard/${project.id}`)} 
-          >
-            <h2>{project.name}</h2>
-            <p>{project.description}</p>
-          </div>
-        ))}
+      {fetchedProjects?.data?.sort((a: { created_at: string | number | Date; }, b: { created_at: string | number | Date; }) =>
+  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+).map((project: Project) => (
+  <div
+    key={project.id}
+    className="project-card"
+    onClick={() => navigate(`/task-dashboard/${project.id}`)}
+  >
+    <h2>{project.name}</h2>
+    <p>{project.description}</p>
+  </div>
+))}
       </div>
 
       {isModalOpen && (

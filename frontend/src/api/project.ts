@@ -19,6 +19,6 @@ export const addProjectToUserAPI = async (
 export const fetchProjects = async (
     user_id: number
   ) => {
-    const response = await axios.post(`${API_URL}/projects?user_id=${user_id}`);
+    const response = await axios.get(`${API_URL}/projects/${user_id}`);
     return response.data;
   };
