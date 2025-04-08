@@ -22,3 +22,10 @@ export const fetchProjects = async (
     const response = await axios.get(`${API_URL}/projects/${user_id}`);
     return response.data;
   };
+
+export const fetchProjectById = async (
+  project_id: number
+) => {
+  const response = await axios.get(`${API_URL}/projects?id=${project_id}`);
+  return response.data;
+}

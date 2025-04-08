@@ -70,39 +70,75 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		vars := mux.Vars(r) 
-		userIdStr := vars["user_id"] 
+		vars := mux.Vars(r)
+		userIdStr := vars["user_id"]
 
-		// Check if user_id is provided
-		if userIdStr == "" {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Missing user_id path parameter",
-			})
-			return
-		}
-
-		userId, err := strconv.ParseUint(userIdStr, 10, 32)
+		userId, err := strconv.Atoi(userIdStr)
 		if err != nil {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "Invalid user_id format",
+				Message: "Invalid user ID",
 			})
 			return
 		}
 
-		// Call the service to fetch the projects
 		projects, err := service.ListProjects(uint(userId))
 		if err != nil {
+			if err.Error() == "user not found" {
+				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
+					Status:  "error",
+					Message: "User not found",
+				})
+				return
+			}
+
 			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
 				Status:  "error",
 				Message: "Failed to retrieve projects",
 			})
 			return
 		}
+
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status: "success",
 			Data:   projects,
+		})
+	}
+}
+
+	func GetProjectHandler(service *services.ProjectService) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+
+			projectIdStr := r.URL.Query().Get("id")
+
+			projectId, err := strconv.Atoi(projectIdStr)
+			if err != nil || projectId <= 0 {
+				utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+					Status:  "error",
+					Message: "Invalid project ID",
+				})
+				return
+			}
+
+			project, err := service.GetProject(uint(projectId))
+			if err != nil {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: "Failed to retrieve project",
+			})
+			return
+		}
+		if project == nil {
+			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
+				Status:  "error",
+				Message: "Project not found",
+			})
+			return
+		}
+
+		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+			Status: "success",
+			Data:   project,
 		})
 	}
 }

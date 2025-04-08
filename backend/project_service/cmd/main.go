@@ -37,7 +37,9 @@ func main() {
 	// Setup router
 	r := mux.NewRouter()
 	r.HandleFunc("/projects", handlers.CreateProjectHandler(projectService)).Methods("POST")
+	r.HandleFunc("/projects", handlers.GetProjectHandler(projectService)).Methods("GET")
 	r.HandleFunc("/projects/{user_id}", handlers.ListProjectHandler(projectService)).Methods("GET")
+	
 	// Use cors middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding

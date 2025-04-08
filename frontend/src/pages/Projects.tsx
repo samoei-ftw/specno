@@ -58,7 +58,7 @@ const Projects: React.FC = () => {
   <div
     key={project.id}
     className="project-card"
-    onClick={() => navigate(`/task-dashboard/${project.id}`)}
+    onClick={() => navigate(`/dashboard/${project.id}`)}
   >
     <h2>{project.name}</h2>
     <p>{project.description}</p>

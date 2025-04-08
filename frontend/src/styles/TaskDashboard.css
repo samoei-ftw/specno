@@ -74,3 +74,9 @@
       width: 100%;
     }
   }
+  .tasks p {
+    color: #aaa;
+    font-style: italic;
+    padding: 1rem;
+    text-align: center;
+  }

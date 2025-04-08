@@ -72,3 +72,12 @@ func (s *ProjectService) ListProjects(userId uint) ([]*models.Project, error) {
 
 	return projects, nil
 }
+
+func (s *ProjectService) GetProject(projectId uint) (*models.Project, error){
+	project, err := s.repo.GetProjectById(projectId)
+	if err != nil {
+		log.Printf("Error fetching project. %d: %v", projectId, err)
+		return nil, errors.New("failed to retrieve project")
+	}
+	return &project, nil
+}
