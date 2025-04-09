@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/utils"
 )
 
@@ -31,7 +32,7 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 			})
 			return
 		}
-		task, err := service.CreateTask(taskCreateRequest.Title, taskCreateRequest.Description, taskCreateRequest.UserID, taskCreateRequest.ProjectID, "new")
+		task, err := service.CreateTask(taskCreateRequest.Title, taskCreateRequest.Description, taskCreateRequest.UserID, taskCreateRequest.ProjectID, enums.Todo)
 		if err != nil {
 			if err.Error() == "user not found" {
 				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
