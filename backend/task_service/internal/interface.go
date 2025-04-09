@@ -5,4 +5,6 @@ import (
 )
 type Repository interface {
 	Create(task *models.Task) error
+	ListTasksForProject(projectId uint) ([]models.Task, error)
+	GetTaskById(taskId uint) (models.Task, error)
 }

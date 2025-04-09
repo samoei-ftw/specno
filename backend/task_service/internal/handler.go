@@ -1,9 +1,3 @@
-// Package handlers
-// Author: Samoei Oloo
-// Created: 2025-04-09
-// License: None
-//
-// This script is responsible for the handlers for the task api
 package internal
 
 import (
@@ -12,17 +6,17 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-
 	"github.com/samoei-ftw/specno/backend/common/utils"
-
-	"github.com/samoei-ftw/specno/backend/gateways"
 )
-//var userGateway = gateways.UserGatewayInit()
 
 func CreateTaskHandler(service *service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
-	taskCreateRequest taskCreateRequest;
+		var taskCreateRequest struct {
+			Title       string `json:"title"`
+			Description string `json:"description"`
+			ProjectID   uint   `json:"project_id"`
+			UserID      uint   `json:"user_id"`
+		}
 		if err := json.NewDecoder(r.Body).Decode(&taskCreateRequest); err != nil {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
@@ -30,7 +24,6 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 			})
 			return
 		}
-
 		if taskCreateRequest.Title == "" || taskCreateRequest.Description == "" || taskCreateRequest.ProjectID == 0 {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
@@ -38,13 +31,12 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 			})
 			return
 		}
-
-		task, err := service.CreateTask(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID)
+		task, err := service.CreateTask(taskCreateRequest.Title, taskCreateRequest.Description, taskCreateRequest.UserID, taskCreateRequest.ProjectID, "new")
 		if err != nil {
 			if err.Error() == "user not found" {
 				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
 					Status:  "error",
-					Message: "Not found error",
+					Message: "User not found",
 				})
 				return
 			}
@@ -54,86 +46,84 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 			})
 			return
 		}
-
 		utils.RespondWithJSON(w, http.StatusCreated, utils.Response{
 			Status: "success",
-			Data:   project,
+			Data:   task,
 		})
 	}
 }
 
-func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
+func ListTasksHandler(service *service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		vars := mux.Vars(r)
-		userIdStr := vars["user_id"]
+		projIdStr := vars["project_id"]
 
-		userId, err := strconv.Atoi(userIdStr)
+		projId, err := strconv.Atoi(projIdStr)
 		if err != nil {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "Invalid user ID",
+				Message: "Invalid project ID",
 			})
 			return
 		}
 
-		projects, err := service.ListProjects(uint(userId))
+		tasks, err := service.ListTasks(uint(projId))
 		if err != nil {
-			if err.Error() == "user not found" {
+			if err.Error() == "not found" {
 				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
 					Status:  "error",
-					Message: "User not found",
+					Message: "not found",
 				})
 				return
 			}
 
 			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
 				Status:  "error",
-				Message: "Failed to retrieve projects",
+				Message: "Failed to retrieve tasks",
 			})
 			return
 		}
 
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status: "success",
-			Data:   projects,
+			Data:   tasks,
 		})
 	}
 }
 
-	func GetProjectHandler(service *services.ProjectService) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
+func GetTaskHandler(service *service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		taskIdStr := r.URL.Query().Get("id")
 
-			projectIdStr := r.URL.Query().Get("id")
-
-			projectId, err := strconv.Atoi(projectIdStr)
-			if err != nil || projectId <= 0 {
-				utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-					Status:  "error",
-					Message: "Invalid project ID",
-				})
-				return
-			}
-
-			project, err := service.GetProject(uint(projectId))
-			if err != nil {
-			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+		taskId, err := strconv.Atoi(taskIdStr)
+		if err != nil || taskId <= 0 {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "Failed to retrieve project",
+				Message: "Invalid task ID",
 			})
 			return
 		}
-		if project == nil {
+
+		task, err := service.GetTask(uint(taskId))
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: "Failed to retrieve task",
+			})
+			return
+		}
+
+		if task == nil {
 			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
 				Status:  "error",
-				Message: "Project not found",
+				Message: "Task not found",
 			})
 			return
 		}
 
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status: "success",
-			Data:   project,
+			Data:   task,
 		})
 	}
 }

@@ -14,9 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/samoei-ftw/specno/backend/common/utils"
-	"github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
-	repo "github.com/samoei-ftw/specno/backend/project_service/internal/repository"
-	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
+	"github.com/samoei-ftw/specno/backend/project_service/internal"
 )
 
 func main() {
@@ -29,16 +27,16 @@ func main() {
 	if port == "" {
 		port = "8082"
 	}
-	projectRepo := repo.NewProjectRepository(utils.GetDB())
+	projectRepo := internal.NewProjectRepository(utils.GetDB())
 
 	// Initialize project service with the repository
-	projectService := services.NewProjectService(projectRepo)
+	projectService := internal.NewProjectService(projectRepo)
 
 	// Setup router
 	r := mux.NewRouter()
-	r.HandleFunc("/projects", handlers.CreateProjectHandler(projectService)).Methods("POST")
-	r.HandleFunc("/projects", handlers.GetProjectHandler(projectService)).Methods("GET")
-	r.HandleFunc("/projects/{user_id}", handlers.ListProjectHandler(projectService)).Methods("GET")
+	r.HandleFunc("/projects", internal.CreateProjectHandler(projectService)).Methods("POST")
+	r.HandleFunc("/projects", internal.GetProjectHandler(projectService)).Methods("GET")
+	r.HandleFunc("/projects/{user_id}", internal.ListProjectHandler(projectService)).Methods("GET")
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{

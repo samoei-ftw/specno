@@ -4,7 +4,7 @@
 // License: None
 //
 // This script is responsible for the handlers for the project api
-package handlers
+package internal
 
 import (
 	"encoding/json"
@@ -12,15 +12,12 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/samoei-ftw/specno/backend/project_service/internal/services"
 
 	"github.com/samoei-ftw/specno/backend/common/utils"
-
-	"github.com/samoei-ftw/specno/backend/gateways"
 )
-var userGateway = gateways.UserGatewayInit()
 
-func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
+
+func CreateProjectHandler(service *ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var projectCreateRequest struct {
 			Name        string `json:"name"`
@@ -67,7 +64,7 @@ func CreateProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	}
 }
 
-func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
+func ListProjectHandler(service *ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		vars := mux.Vars(r)
@@ -106,7 +103,7 @@ func ListProjectHandler(service *services.ProjectService) http.HandlerFunc {
 	}
 }
 
-	func GetProjectHandler(service *services.ProjectService) http.HandlerFunc {
+	func GetProjectHandler(service *ProjectService) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
 			projectIdStr := r.URL.Query().Get("id")

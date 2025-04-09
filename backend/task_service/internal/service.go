@@ -1,14 +1,18 @@
 package internal
 
 import (
-	"github.com/samoei-ftw/specno/backend/common/models"
-	//"github.com/samoei-ftw/specno/backend/gateways"
+	"errors"
+	"log"
+	"time"
+
 	"github.com/samoei-ftw/specno/backend/common/enums"
+	"github.com/samoei-ftw/specno/backend/common/models"
+	"github.com/samoei-ftw/specno/backend/gateways"
 )
 
 var (
 	userGateway = gateways.UserGatewayInit()
-	//projectGateway = gateways.ProjectGatewayInit() TODO
+	projectGateway = gateways.ProjectGatewayInit()
 )
 
 type service struct {
@@ -22,60 +26,52 @@ func NewService(repo Repository) *service {
 // Adds a task to a project
 func (s *service) CreateTask(title, description string, userId uint, projectId uint, status enums.TaskStatus) (*models.Task, error) {
 	//Validate project belongs to user
-	project, err := projectGateway.userOwnsProject(userId, projectId)
+	project, err := projectGateway.UserOwnsProject(projectId)
 	if err != nil {
-		log.Printf("Error fetching user %d: %v", userId, err)
+		log.Printf("Gateway error %d: %v", projectId, err)
 		if err.Error() == "user not found" {
-			return nil, errors.New("user not found")
+			return nil, errors.New("Gateway error")
 		}
-		return nil, errors.New("failed to retrieve user")
+		return nil, errors.New("Gateway error")
 	}
 
-	project := &models.Project{
-		Name:        name,
+	task := &models.Task{
+		Title:        title,
 		Description: description,
-		UserID:      user.ID,
+		UserID:      project.UserID,
+		ProjectID: project.ID,
+		CreatedAt: time.Now(),
+		Status: status,
 	}
 
-	if err := s.repo.Create(project); err != nil {
-		log.Printf("Error creating project: %v", err)
-		return nil, errors.New("failed to create project")
-	}*/
+	if err := s.repo.Create(task); err != nil {
+		log.Printf("Error creating task: %v", err)
+		return nil, errors.New("failed to create task")
+	}
 
-	return project, nil
+	return task, nil
 }
 
 // Lists all tasks for a project
 func (s *service) ListTasks(projectId uint) ([]*models.Task, error) {
-	/** Validate user exists
-	user, err := userGateway.GetUserByID(userId)
+	taskList, err := s.repo.ListTasksForProject(projectId)
 	if err != nil {
-		log.Printf("Error fetching user %d: %v", userId, err)
-		if err.Error() == "user not found" {
-			return nil, errors.New("user not found")
-		}
-		return nil, errors.New("failed to retrieve user")
+		log.Printf("Error fetching tasks for project %d: %v", projectId, err)
+		return nil, errors.New("failed to retrieve tasks")
+	}
+	tasks := make([]*models.Task, len(taskList))
+	for i, t := range taskList {
+		tasks[i] = &t
 	}
 
-	projectList, err := s.repo.GetByUserID(user.ID)
-	if err != nil {
-		log.Printf("Error fetching projects for user %d: %v", userId, err)
-		return nil, errors.New("failed to retrieve projects")
-	}
-
-	projects := make([]*models.Project, len(projectList))
-	for i, p := range projectList {
-		projects[i] = &p
-	}
-
-	return projects, nil*/
+	return tasks, nil
 }
 
-func (s *service) GetProject(projectId uint) (*models.Project, error){
-	/**project, err := s.repo.GetProjectById(projectId)
+func (s *service) GetTask(taskId uint) (*models.Task, error){
+	task, err := s.repo.GetTaskById(taskId)
 	if err != nil {
-		log.Printf("Error fetching project. %d: %v", projectId, err)
-		return nil, errors.New("failed to retrieve project")
+		log.Printf("Error fetching task. %d: %v", taskId, err)
+		return nil, errors.New("failed to retrieve task")
 	}
-	return &project, nil*/
+	return &task, nil
 }
