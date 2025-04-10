@@ -14,8 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/samoei-ftw/specno/backend/common/utils"
-	//repo "github.com/samoei-ftw/specno/backend/task_service/internal/repository"
-	//"github.com/samoei-ftw/specno/backend/task_service/internal/services"
+	internal "github.com/samoei-ftw/specno/backend/task_service/internal"
 )
 
 func main() {
@@ -28,12 +27,12 @@ func main() {
 	if port == "" {
 		port = "8083"
 	}
-	//projectRepo := repo.NewProjectRepository(utils.GetDB())
+	taskRepo := internal.NewRepository(utils.GetDB())
 
-	//projectService := services.NewProjectService(projectRepo)
+	taskService := internal.NewService(taskRepo)
 
 	r := mux.NewRouter()
-	//r.HandleFunc("/tasks", handlers.CreateProjectHandler(projectService)).Methods("POST")
+	r.HandleFunc("/tasks", internal.CreateTaskHandler(taskService)).Methods("POST")
 	//r.HandleFunc("/tasks", handlers.GetProjectHandler(projectService)).Methods("GET")
 	//r.HandleFunc("/tasks/{user_id}", handlers.ListProjectHandler(projectService)).Methods("GET")
 	

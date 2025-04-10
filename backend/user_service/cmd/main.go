@@ -11,7 +11,7 @@ import (
 	utils "github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/handlers"
 	userRepo "github.com/samoei-ftw/specno/backend/user_service/internal/repo"
-	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
+	userService "github.com/samoei-ftw/specno/backend/user_service/internal/services"
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 		port = "8080"
 	}
 	userRepo := userRepo.NewUserRepository(utils.GetDB())
-    userService := services.NewUserService(userRepo)
+    userService := userService.NewUserService(userRepo)
 	r := mux.NewRouter()
     // Register routes with handlers, injecting the userService instance
 	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
