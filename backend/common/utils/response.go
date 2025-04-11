@@ -18,6 +18,10 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type GetOwnerResponse struct {
+	IsOwner  bool      `json:"is_owner"`
+}
+
 // Return formatted JSON response
 func RespondWithJSON(w http.ResponseWriter, statusCode int, response Response) {
 	w.Header().Set("Content-Type", "application/json")

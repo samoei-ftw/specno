@@ -22,7 +22,6 @@ type UserGateway struct {
 	HTTPClient *http.Client
 }
 
-// Initializes a new UserGateway
 func UserGatewayInit() *UserGateway {
 	baseURL := os.Getenv("USER_SERVICE_BASE_URL")
 	if baseURL == "" {
@@ -37,7 +36,6 @@ func UserGatewayInit() *UserGateway {
 	}
 }
 
-// GetUserByID fetches a user by ID from the User Service.
 func (g *UserGateway) GetUserByID(userID uint) (*models.User, error) {
 	url := fmt.Sprintf("%s/users/%d", g.BaseURL, userID)
 

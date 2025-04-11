@@ -7,8 +7,10 @@ RUN go mod tidy
 
 COPY ./common /app/common
 COPY ./gateways /app/gateways
+COPY ./user_service /app/user_service
 COPY ./database /app/database
 COPY ./wait-for-it.sh /wait-for-it.sh
+
 
 WORKDIR /app/project_service
 COPY ./project_service /app/project_service

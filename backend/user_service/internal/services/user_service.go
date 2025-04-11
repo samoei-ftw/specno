@@ -39,14 +39,12 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 		return 0, errors.New("failed to hash password")
 	}
 
-	// Create a new user object
 	user := models.User{
 		Email:    email,
 		Password: string(hashedPassword),
 	}
 
-	// Call the repo layer to save the user
-	userID, err := s.repo.Create(&user) // Fixed to pass pointer to Create method
+	userID, err := s.repo.Create(&user)
 	if err != nil {
 		log.Println("Error saving user to DB:", err)
 		return 0, err
@@ -55,7 +53,6 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 	return userID, nil
 }
 
-// Fetches a user by their ID.
 func (s *UserService) GetUserByID(userID int) (*models.User, error) {
 	user, err := s.repo.GetUserByID(userID)
 	if err != nil {

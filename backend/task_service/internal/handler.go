@@ -2,9 +2,11 @@ package internal
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
+	//"strings"
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/utils"
@@ -12,6 +14,8 @@ import (
 
 func CreateTaskHandler(service *service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		tokenStr := r.Header.Get("Authorization")
+
 		var taskCreateRequest struct {
 			Title       string `json:"title"`
 			Description string `json:"description"`
@@ -32,7 +36,8 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 			})
 			return
 		}
-		task, err := service.CreateTask(taskCreateRequest.Title, taskCreateRequest.Description, taskCreateRequest.UserID, taskCreateRequest.ProjectID, enums.Todo)
+		log.Printf("Creating task from request with params: %s", taskCreateRequest.Title)
+		task, err := service.CreateTask(taskCreateRequest.Title, taskCreateRequest.Description, taskCreateRequest.UserID, taskCreateRequest.ProjectID, enums.Todo, tokenStr)
 		if err != nil {
 			if err.Error() == "user not found" {
 				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{

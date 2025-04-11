@@ -15,6 +15,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/samoei-ftw/specno/backend/common/utils"
 	"github.com/samoei-ftw/specno/backend/project_service/internal"
+	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 )
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 	r.HandleFunc("/projects", internal.CreateProjectHandler(projectService)).Methods("POST")
 	r.HandleFunc("/projects", internal.GetProjectHandler(projectService)).Methods("GET")
 	r.HandleFunc("/projects/{user_id}", internal.ListProjectHandler(projectService)).Methods("GET")
+	r.Handle("/projects/{project_id}/ownership", auth.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET")
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{

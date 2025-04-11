@@ -73,7 +73,7 @@ func (s *ProjectService) GetProject(projectId uint) (*models.Project, error) {
 	return &project, nil
 }
 
-func (s *ProjectService) GetUserForProject(projectId uint) (uint, error) {
+func (s *ProjectService) GetUserForProject(projectId uint, bearer string) (uint, error) {
 	userId, err := s.repo.GetUserForProject(projectId)
 	if err != nil {
 		log.Printf("Error fetching user for project %d: %v", projectId, err)

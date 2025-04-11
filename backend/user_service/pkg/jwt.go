@@ -7,6 +7,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
@@ -41,7 +42,9 @@ func init() {
 	}
 	jwtKey = []byte(secret)
 }
+type contextKey string
 
+const ClaimsKey contextKey = "claims"
 type Claims struct {
 	UserID int `json:"user_id"`
 	jwt.RegisteredClaims
@@ -61,17 +64,34 @@ func GenerateToken(userID int) (string, error) {
 
 func ParseJWT(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return jwtKey, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
 	}
-	return claims, nil
+
+	return nil, errors.New("invalid token")
+}
+
+func ExtractTokenFromHeader(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", errors.New("authorization header missing")
+	}
+
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return "", errors.New("invalid authorization header format")
+	}
+
+	return strings.TrimPrefix(authHeader, "Bearer "), nil
 }
 
 func ValidateToken(tokenStr string) (bool, error) {
@@ -126,28 +146,22 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func JwtMiddleware(next http.Handler) http.Handler {
+func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get("Authorization")
-		if tokenString == "" {
-			http.Error(w, "Missing token", http.StatusUnauthorized)
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+			http.Error(w, "Missing or invalid Authorization header", http.StatusUnauthorized)
 			return
 		}
 
-		parts := strings.Split(tokenString, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "Invalid token format", http.StatusUnauthorized)
-			return
-		}
-		tokenString = parts[1]
-
-		_, err := ParseJWT(tokenString)
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		claims, err := ParseJWT(tokenStr)
 		if err != nil {
-			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			http.Error(w, "Invalid token: "+err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		// Proceed to the next handler if the token is valid
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), ClaimsKey, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

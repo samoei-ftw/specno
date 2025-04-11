@@ -3,6 +3,7 @@ package internal
 import (
 	"errors"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/samoei-ftw/specno/backend/common/enums"
@@ -24,9 +25,13 @@ func NewService(repo Repository) *service {
 }
 
 // Adds a task to a project
-func (s *service) CreateTask(title, description string, userId uint, projectId uint, status enums.TaskStatus) (*models.Task, error) {
+func (s *service) CreateTask(title, description string, userId uint, projectId uint, status enums.TaskStatus, bearer string) (*models.Task, error) {
+	log.Printf("Validating task request project id: %s", strconv.FormatUint(uint64(projectId), 10))
 	//Validate project belongs to user
-	project, err := projectGateway.UserOwnsProject(projectId)
+	isOwner, err := projectGateway.UserOwnsProject(projectId, bearer)
+	if(isOwner != true){
+		return nil, errors.New("Error adding task to project. The user does not own this project.")
+	}
 	if err != nil {
 		log.Printf("Gateway error %d: %v", projectId, err)
 		if err.Error() == "user not found" {
@@ -38,8 +43,8 @@ func (s *service) CreateTask(title, description string, userId uint, projectId u
 	task := &models.Task{
 		Title:        title,
 		Description: description,
-		UserID:      project.UserID,
-		ProjectID: project.ID,
+		UserID:      userId,
+		ProjectID: projectId,
 		CreatedAt: time.Now(),
 		Status: status,
 	}

@@ -43,7 +43,7 @@ func RunMigrations(migrationsDir string) error {
 	return nil
 }
 
-// GetDB returns the database instance for repo functions
+// returns the database instance for repo functions
 func GetDB() *gorm.DB {
 	return DB
 }

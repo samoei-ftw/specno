@@ -10,11 +10,10 @@ package gateways
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/samoei-ftw/specno/backend/common/models"
 )
 
 type ProjectGateway struct {
@@ -36,29 +35,42 @@ func ProjectGatewayInit() *ProjectGateway {
 	}
 }
 
-func (g *ProjectGateway) UserOwnsProject(projectId uint) (*models.Project, error) {
+func (g *ProjectGateway) UserOwnsProject(projectId uint, bearer string) (bool, error) {
 	url := fmt.Sprintf("%s/projects/%d/ownership", g.BaseURL, projectId)
 
-	resp, err := g.HTTPClient.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", bearer)
 	if err != nil {
-		return nil, fmt.Errorf("Gateway error: %w", err)
+		log.Fatal(err)
+	}
+	req.Header.Add("Authorization", bearer)
+	resp, err := g.HTTPClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+	if err != nil {
+		return false, fmt.Errorf("Gateway error: %w", err)
+	}
+	defer resp.Body.Close()
+	log.Printf("Response status: %d", resp.StatusCode)
 	
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Project service returned status: %d", resp.StatusCode)
+		return false, resp.Request.Context().Err()
 	}
 	
-	var ownershipResponse struct {
-		IsOwner bool `json:"isOwner"`
+	var gatewayResponse struct {
+		Status string `json:"status"`
+		Data   struct {
+			IsOwner bool `json:"is_owner"`
+		} `json:"data"`
 	}
 	
-	if err := json.NewDecoder(resp.Body).Decode(&ownershipResponse); err != nil {
-		return nil, fmt.Errorf("Error interpreting response: %w", err)
-	}
-	if !ownershipResponse.IsOwner {
-		return nil, fmt.Errorf("User does not have access to this project")
+	if err := json.NewDecoder(resp.Body).Decode(&gatewayResponse); err != nil {
+		return false, resp.Request.Context().Err()
 	}
 	
-	return nil, nil
+	isOwner := gatewayResponse.Data.IsOwner
+	
+	return isOwner, nil
 }
