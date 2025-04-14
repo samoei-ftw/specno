@@ -16,15 +16,31 @@
 }
 
 .swimlane {
+  position: relative;
+  padding-top: 3rem;
   border-radius: 12px;
   background-color: #f4f5f7;
   box-shadow: 0 1px 4px rgba(9, 30, 66, 0.1);
   max-width: 300px;
   min-width: 280px;
+  overflow: visible;
 }
+
 .swimlane-title {
-  font-weight: bold;
-  margin-bottom: 10px;
+  position: sticky;
+  top: -40px;
+  left: 16px;
+  background: #7e5bef;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  box-shadow: 0 3px 6px rgba(126, 91, 239, 0.3);
+  z-index: 1;
+  text-transform: uppercase;
+  transform: translateY(-60%);
 }
 .swimlane-header {
   display: flex;
@@ -36,7 +52,26 @@
   color: #44546f;
   text-transform: uppercase;
 }
-
+.swimlane:hover .swimlane-title {
+  transform: translateY(-60%);
+}
+.add-task-btn {
+  background: rgba(126, 91, 239, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  box-shadow: 0 4px 10px rgba(126, 91, 239, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+}
 .swimlane-header h2 {
   font-size: 1rem;
   color: #172b4d;
@@ -44,24 +79,27 @@
 }
 
 .add-task-btn {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  color: #5e6c84;
-  transition: color 0.3s;
-  background-color: #007bff;
+  background: rgba(126, 91, 239, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: white;
-  border: none;
-  padding: 6px 12px;
-  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  box-shadow: 0 4px 10px rgba(126, 91, 239, 0.3);
   cursor: pointer;
-  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .add-task-btn:hover {
-  color: #172b4d;
-  background-color: #0056b3;
+  background-color: #6844d9;
+  box-shadow: 0 6px 16px rgba(104, 68, 217, 0.4);
+  transform: translateY(-1px);
 }
 
 .tasks {
@@ -158,4 +196,9 @@
 
 html {
   scroll-behavior: smooth;
+}
+.add-task-btn:hover {
+  background: rgba(104, 68, 217, 0.35);
+  box-shadow: 0 6px 16px rgba(104, 68, 217, 0.4);
+  transform: translateY(-1px);
 }

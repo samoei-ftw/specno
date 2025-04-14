@@ -91,24 +91,20 @@ export const TaskDashboard: React.FC = () => {
             }),
           }));
 
-          return (
-            <div
-              key={laneStatus}
-              ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>}
-              className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
-            >
-              <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
+          return connectDropTarget(
+            <div key={laneStatus} className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}>
+  <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
+  
+  {laneStatus === "to-do" && (
+    <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
+      <FontAwesomeIcon icon={faPlus} /> Add Task
+    </button>
+  )}
 
-              {laneStatus === "to-do" && (
-                <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
-                  <FontAwesomeIcon icon={faPlus} /> Add Task
-                </button>
-              )}
-
-              {groupedTasks[laneStatus].map((task) => (
-                <DraggableTask key={task.id} task={task} />
-              ))}
-            </div>
+  {groupedTasks[laneStatus].map((task) => (
+    <DraggableTask key={task.id} task={task} />
+  ))}
+</div>
           );
         })}
       </div>
@@ -128,7 +124,24 @@ export const TaskDashboard: React.FC = () => {
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
             />
-            <button onClick={handleAddTask}>Add Task</button>
+            <button className="add-task-btn" onClick={handleAddTask}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="feather feather-plus"
+    style={{ marginRight: 8 }}
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+  Add Task
+</button>
           </div>
         </div>
       )}
