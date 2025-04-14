@@ -1,10 +1,11 @@
 package internal
 
 import (
-	"bytes"
+	//"bytes" for debugging
 	"encoding/json"
 	"fmt"
-	"io"
+
+	//"io" for debugging
 	"log"
 	"net/http"
 	"strconv"
@@ -139,10 +140,11 @@ func GetTaskHandler(service *services.Service) http.HandlerFunc {
 }
 func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// just checking what fe is sending to backend
+		/** Debug payload
 		body, _ := io.ReadAll(r.Body)
 		fmt.Println("Raw body:", string(body))
 		r.Body = io.NopCloser(bytes.NewBuffer(body)) 
+		*/
 
 		vars := mux.Vars(r)
 		taskIdStr := vars["task_id"]
@@ -173,7 +175,7 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 		}
 		
 		status := updateTaskRequest.Status
-		fmt.Printf("Request status is: %s", status) //bug
+		//fmt.Printf("Request status is: %s", status)
 		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(status))
 		if err != nil {
 			fmt.Printf("Error in updating task status: %v\n", err)
@@ -183,7 +185,6 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			})
 			return
 		}
-		//fmt.Printf("Task updated successfully: %v\n", task)
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status:  "success",
 			Message: "Task updated successfully",

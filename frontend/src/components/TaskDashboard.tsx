@@ -61,20 +61,20 @@ export const TaskDashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <h1>{projectName}</h1>
+      {/* Container for all the swimlanes*/}
       <div className="swimlanes">
         {(["to-do", "in-progress", "done"] as Task["status"][]).map((laneStatus) => {
+          // set up drop target for dnd
           const [{ isOver, canDrop }, connectDropTarget] = useDrop(() => ({
             accept: "TASK",
-            drop: async (item: { id: number }) => {
-              //console.log("About to update task with id", item.id, "to status", laneStatus);
-
+            drop: async (item: { id: number }) => { // invoked when a task is dropped on this lane
               try {
+                // match BE
                 const normalizedStatus = normaliseStatus(laneStatus);
                 console.log(`Normalized status: ${normalizedStatus}`);
+                // Send update to backend to change the task's status
                 const updatedTask = await updateTaskStatus(item.id, normalizedStatus);
-
-                //console.log("Updated task:", updatedTask);
-
+                // Update the task list in state with the new status
                 setTasks((prevTasks) =>
                   prevTasks.map((task) =>
                     task.id === item.id ? { ...task, status: normalizedStatus } : task
@@ -85,6 +85,7 @@ export const TaskDashboard: React.FC = () => {
               }
             },
             canDrop: () => true,
+            // whether item is over or can be dropped
             collect: (monitor) => ({
               isOver: monitor.isOver(),
               canDrop: monitor.canDrop(),
