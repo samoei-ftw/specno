@@ -7,5 +7,8 @@ type CreateTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
-	Status int `json:"status" validate:"required"`
+	UserID *uint `json:"user_id" validate:"required"`
+	Status *int `json:"status" validate:"required"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
 }

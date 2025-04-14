@@ -83,13 +83,33 @@ func (s *Service) GetTask(taskId uint) (*models.Task, error){
 	return &task, nil
 }
 
-func (s *Service) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (*models.Task, error){
+func (s *Service) UpdateTask(
+	taskId uint,
+	status *enums.TaskStatus,
+	title *string,
+	description *string,
+	assignee *uint,
+) (*models.Task, error){
 	fmt.Printf("Updating task with ID %d to status %s\n", taskId, status)
-	task, err := s.repo.UpdateTaskStatus(taskId, status)
+	task, err := s.repo.UpdateTask(taskId, status, title, description, assignee)
 	if err != nil {
 		log.Printf("Error updating task status. %d: %v", taskId, err)
 		return nil, errors.New(err.Error())
 	}
 	fmt.Printf("Updated task status: %v\n", task.Status)
 	return &task, nil
+}
+
+func (s *Service) DeleteTask(taskId int) (bool, error) {
+	project, err := s.repo.GetTaskById(uint(taskId))
+	if err != nil {
+		return false, err
+	}
+
+	isDeleted, err := s.repo.DeleteTask(&project)
+	if err != nil {
+		return false, errors.New("Failed to delete task")
+	}
+
+	return isDeleted, nil
 }

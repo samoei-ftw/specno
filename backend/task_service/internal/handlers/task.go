@@ -1,4 +1,4 @@
-package internal
+package handlers
 
 import (
 	//"bytes" for debugging
@@ -138,6 +138,7 @@ func GetTaskHandler(service *services.Service) http.HandlerFunc {
 		})
 	}
 }
+
 func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		/** Debug payload
@@ -147,7 +148,7 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 		*/
 
 		vars := mux.Vars(r)
-		taskIdStr := vars["task_id"]
+		taskIdStr := vars["id"]
 		taskId, err := strconv.Atoi(taskIdStr)
 		if err != nil {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
@@ -166,7 +167,7 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			return
 		}
 		fmt.Printf("Decoded updateTaskRequest: %+v\n", updateTaskRequest)
-		if !enums.IsValidTaskStatus(updateTaskRequest.Status) {
+		if !enums.IsValidTaskStatus(*updateTaskRequest.Status) {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
 				Message: "Invalid task status value",
@@ -174,9 +175,9 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			return
 		}
 		
-		status := updateTaskRequest.Status
-		//fmt.Printf("Request status is: %s", status)
-		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(status))
+		/**status := updateTaskRequest.Status
+		fmt.Printf("Request status is: %s", status)*/
+		task, err := service.UpdateTask(uint(taskId), (*enums.TaskStatus)(updateTaskRequest.Status), updateTaskRequest.Name, updateTaskRequest.Description, updateTaskRequest.UserID)
 		if err != nil {
 			fmt.Printf("Error in updating task status: %v\n", err)
 			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
@@ -191,4 +192,33 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			Data:    task,
 		})
 	}
+}
+
+func DeleteTaskHandler(service *services.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		taskIdStr := vars["id"]
+
+		taskId, err := strconv.Atoi(taskIdStr)
+		if err != nil || taskId <= 0 {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid task ID",
+			})
+			return
+		}
+		isDeleted, err := service.DeleteTask(taskId)
+		if isDeleted != true {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: "Failed to delete task",
+			})
+			return
+		}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+		Status: "success",
+		Data:   "Task deleted", // TODO
+	})
+}
 }
