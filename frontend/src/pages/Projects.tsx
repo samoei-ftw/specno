@@ -3,7 +3,7 @@ import { useAddProject, useFetchProject } from "../hooks/useProject";
 import { useNavigate } from "react-router-dom";
 import { User } from "../models/User";
 import { Project } from "../models/Project"; 
-import "../styles/Projects.css";
+import "../styles/Projects.scss";
 
 const Projects: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

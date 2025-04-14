@@ -11,7 +11,7 @@ const (
 func (s TaskStatus) String() string {
 	switch s {
 	case Todo:
-		return "Todo"
+		return "To do"
 	case InProgress:
 		return "In Progress"
 	case Done:
@@ -19,4 +19,8 @@ func (s TaskStatus) String() string {
 	default:
 		return "Unknown"
 	}
+}
+
+func IsValidTaskStatus(status int) bool {
+	return status >= 0 && status <= 2
 }

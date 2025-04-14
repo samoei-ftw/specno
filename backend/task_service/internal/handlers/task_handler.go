@@ -1,7 +1,11 @@
 package internal
 
 import (
+	//"bytes" for debugging
 	"encoding/json"
+	"fmt"
+
+	//"io" for debugging
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/utils"
+	dto "github.com/samoei-ftw/specno/backend/task_service/internal/models"
 	services "github.com/samoei-ftw/specno/backend/task_service/internal/services"
 )
 
@@ -130,6 +135,60 @@ func GetTaskHandler(service *services.Service) http.HandlerFunc {
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status: "success",
 			Data:   task,
+		})
+	}
+}
+func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		/** Debug payload
+		body, _ := io.ReadAll(r.Body)
+		fmt.Println("Raw body:", string(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body)) 
+		*/
+
+		vars := mux.Vars(r)
+		taskIdStr := vars["task_id"]
+		taskId, err := strconv.Atoi(taskIdStr)
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid task ID",
+			})
+			return
+		}
+
+		var updateTaskRequest dto.UpdateTaskRequest
+		if err := json.NewDecoder(r.Body).Decode(&updateTaskRequest); err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid JSON payload",
+			})
+			return
+		}
+		fmt.Printf("Decoded updateTaskRequest: %+v\n", updateTaskRequest)
+		if !enums.IsValidTaskStatus(updateTaskRequest.Status) {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid task status value",
+			})
+			return
+		}
+		
+		status := updateTaskRequest.Status
+		//fmt.Printf("Request status is: %s", status)
+		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(status))
+		if err != nil {
+			fmt.Printf("Error in updating task status: %v\n", err)
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: err.Error(),
+			})
+			return
+		}
+		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+			Status:  "success",
+			Message: "Task updated successfully",
+			Data:    task,
 		})
 	}
 }

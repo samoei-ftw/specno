@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDrag } from "react-dnd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import "../styles/TaskDashboard.css";
+import "../styles/TaskDashboard.scss";
 
 interface Task {
   id: number;

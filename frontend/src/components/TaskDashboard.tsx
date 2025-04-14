@@ -1,20 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
-import { addTaskToProject } from "../api/task";
+import { addTaskToProject, updateTaskStatus } from "../api/task";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
-import "../styles/TaskDashboard.css";
-
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: "to-do" | "in-progress" | "done";
-}
+import "../styles/TaskDashboard.scss";
+import { Task } from "../types/task";
+import { normaliseStatus } from "../utils/normalise";
 
 export const TaskDashboard: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -23,7 +17,6 @@ export const TaskDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
-  const [taskStatus, setTaskStatus] = useState<"to-do" | "in-progress" | "done">("to-do");
 
   useEffect(() => {
     if (projectId) {
@@ -44,46 +37,19 @@ export const TaskDashboard: React.FC = () => {
     "done": tasks.filter((task) => task.status === "done"),
   };
 
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
-    accept: "TASK",
-    drop: (item: { id: number }) => {
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === item.id) {
-          return { ...task, status: taskStatus };
-        }
-        return task;
-      });
-
-      setTasks(updatedTasks);
-    },
-    canDrop: (item: { id: number }) => {
-      return true; 
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  }));
-
-  const statusMap = {
-    0: "to-do",
-    1: "in-progress",
-    2: "done",
-  } as const;
-  
   const handleAddTask = async () => {
     if (!newTaskTitle || !newTaskDescription) return;
-  
+
     try {
       const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
-  
+
       const createdTask: Task = {
         ...rawTask,
-        status: statusMap[rawTask.status as keyof typeof statusMap],
+        status: normaliseStatus(rawTask.status),
       };
-  
-      setTasks(prevTasks => [...prevTasks, createdTask]);
-  
+
+      setTasks((prevTasks) => [...prevTasks, createdTask]);
+
       setIsModalOpen(false);
       setNewTaskTitle("");
       setNewTaskDescription("");
@@ -92,38 +58,56 @@ export const TaskDashboard: React.FC = () => {
     }
   };
 
-  const dropRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className="dashboard-container">
       <h1>{projectName}</h1>
+      {/* Container for all the swimlanes*/}
       <div className="swimlanes">
-  {["to-do", "in-progress", "done"].map((lane) => (
-    <div
-      key={lane}
-      className="swimlane"
-      onClick={() => setTaskStatus(lane as Task["status"])}
-    >
-      <div className="swimlane-header">
-        <h2>{lane.replace("-", " ").toUpperCase()}</h2>
-        <button
-          className="add-task-btn"
-          onClick={() => {
-            setTaskStatus(lane as Task["status"]);
-            setIsModalOpen(true);
-          }}
-        >
-          <FontAwesomeIcon icon={faPlus} />
-        </button>
-      </div>
-      <div className="tasks">
-        {groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
-          <DraggableTask key={task.id} task={task} />
-        ))}
-      </div>
-    </div>
+        {(["to-do", "in-progress", "done"] as Task["status"][]).map((laneStatus) => {
+          // set up drop target for dnd
+          const [{ isOver, canDrop }, connectDropTarget] = useDrop(() => ({
+            accept: "TASK",
+            drop: async (item: { id: number }) => { // invoked when a task is dropped on this lane
+              try {
+                // match BE
+                const normalizedStatus = normaliseStatus(laneStatus);
+                console.log(`Normalized status: ${normalizedStatus}`);
+                // Send update to backend to change the task's status
+                const updatedTask = await updateTaskStatus(item.id, normalizedStatus);
+                // Update the task list in state with the new status
+                setTasks((prevTasks) =>
+                  prevTasks.map((task) =>
+                    task.id === item.id ? { ...task, status: normalizedStatus } : task
+                  )
+                );
+              } catch (error) {
+                console.error("Failed to update task status:", error);
+              }
+            },
+            canDrop: () => true,
+            // whether item is over or can be dropped
+            collect: (monitor) => ({
+              isOver: monitor.isOver(),
+              canDrop: monitor.canDrop(),
+            }),
+          }));
+
+          return connectDropTarget(
+            <div key={laneStatus} className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}>
+  <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
+  
+  {laneStatus === "to-do" && (
+    <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
+      <FontAwesomeIcon icon={faPlus} /></button>
+  )}
+
+  {groupedTasks[laneStatus].map((task) => (
+    <DraggableTask key={task.id} task={task} />
   ))}
 </div>
+          );
+        })}
+      </div>
 
       {isModalOpen && (
         <div className="modal">
@@ -140,7 +124,24 @@ export const TaskDashboard: React.FC = () => {
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
             />
-            <button onClick={handleAddTask}>Add Task</button>
+            <button className="add-task-btn" onClick={handleAddTask}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="feather feather-plus"
+    style={{ marginRight: 8 }}
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+  Add Task
+</button>
           </div>
         </div>
       )}

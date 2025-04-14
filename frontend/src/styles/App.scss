@@ -1,0 +1,56 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f4f7fb;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ========== Logo ========== */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  margin-bottom: 2rem;
+  transition: filter 300ms ease;
+  will-change: filter;
+
+  &:hover {
+    filter: drop-shadow(0 0 2em rgba(100, 100, 255, 0.6));
+  }
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* ========== Card ========== */
+.card {
+  padding: 2em;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ========== Documentation Link ========== */
+.read-the-docs {
+  color: #888;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}

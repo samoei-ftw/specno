@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -47,7 +48,7 @@ func (s *Service) CreateTask(title, description string, userId uint, projectId u
 		UserID:      userId,
 		ProjectID: projectId,
 		CreatedAt: time.Now(),
-		Status: status,
+		Status: status.String(),
 	}
 
 	if err := s.repo.Create(task); err != nil {
@@ -79,5 +80,16 @@ func (s *Service) GetTask(taskId uint) (*models.Task, error){
 		log.Printf("Error fetching task. %d: %v", taskId, err)
 		return nil, errors.New("failed to retrieve task")
 	}
+	return &task, nil
+}
+
+func (s *Service) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (*models.Task, error){
+	fmt.Printf("Updating task with ID %d to status %s\n", taskId, status)
+	task, err := s.repo.UpdateTaskStatus(taskId, status)
+	if err != nil {
+		log.Printf("Error updating task status. %d: %v", taskId, err)
+		return nil, errors.New(err.Error())
+	}
+	fmt.Printf("Updated task status: %v\n", task.Status)
 	return &task, nil
 }

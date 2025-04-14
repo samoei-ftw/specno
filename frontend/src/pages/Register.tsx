@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useRegister } from "../hooks/useRegister";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
-import "../styles/AuthForm.css";
+import "../styles/AuthForm.scss";
 
 const ErrorModal = ({ errorMessage, onClose }: { errorMessage: string; onClose: () => void }) => (
     <div className="error-modal">
