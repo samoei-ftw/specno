@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
-import "../styles/TaskDashboard.css";
+import "../styles/TaskDashboard.scss";
 import { Task } from "../types/task";
 import { normaliseStatus } from "../utils/normalise";
 
@@ -97,8 +97,7 @@ export const TaskDashboard: React.FC = () => {
   
   {laneStatus === "to-do" && (
     <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
-      <FontAwesomeIcon icon={faPlus} /> Add Task
-    </button>
+      <FontAwesomeIcon icon={faPlus} /></button>
   )}
 
   {groupedTasks[laneStatus].map((task) => (
