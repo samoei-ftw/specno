@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
 import { addTaskToProject, updateTaskStatus } from "../api/task";
@@ -7,13 +7,8 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: "to-do" | "in-progress" | "done";
-}
+import { Task, TaskStatus } from "../types/task";
+import { normaliseStatus } from "../utils/normalise";
 
 export const TaskDashboard: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -43,25 +38,21 @@ export const TaskDashboard: React.FC = () => {
     "done": tasks.filter((task) => task.status === "done"),
   };
 
-  const statusMap = {
-    0: "to-do",
-    1: "in-progress",
-    2: "done",
-  } as const;
+
 
   const handleAddTask = async () => {
     if (!newTaskTitle || !newTaskDescription) return;
-
+  
     try {
       const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
-
+  
       const createdTask: Task = {
         ...rawTask,
-        status: statusMap[rawTask.status as keyof typeof statusMap],
+        status: normaliseStatus(rawTask.status),
       };
-
+  
       setTasks((prevTasks) => [...prevTasks, createdTask]);
-
+  
       setIsModalOpen(false);
       setNewTaskTitle("");
       setNewTaskDescription("");
@@ -75,60 +66,53 @@ export const TaskDashboard: React.FC = () => {
       <h1>{projectName}</h1>
       <div className="swimlanes">
         {(["to-do", "in-progress", "done"] as Task["status"][]).map((laneStatus) => {
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
-    accept: "TASK",
-    drop: async (item: { id: number }) => {
-      try {
-        const updatedTask = await updateTaskStatus(item.id, laneStatus);
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.id === item.id ? { ...task, status: laneStatus } : task
-          )
-        );
-      } catch (error) {
-        console.error("Failed to update task status:", error);
-      }
-    },
-    canDrop: () => true,
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  }));
-
-  const laneRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (laneRef.current) {
-      drop(laneRef.current);
-    }
-  }, [drop]);
-
+          const [{ isOver, canDrop }, connectDropTarget] = useDrop(() => ({
+            accept: "TASK",
+            drop: async (item: { id: number }) => {
+              try {
+                const updatedTask = await updateTaskStatus(item.id, laneStatus);
+                setTasks((prevTasks) =>
+                  prevTasks.map((task) =>
+                    task.id === item.id ? { ...task, status: laneStatus } : task
+                  )
+                );
+              } catch (error) {
+                console.error("Failed to update task status:", error);
+              }
+            },
+            canDrop: () => true,
+            collect: (monitor) => ({
+              isOver: monitor.isOver(),
+              canDrop: monitor.canDrop(),
+            }),
+          }));
+          
           return (
             <div
               key={laneStatus}
-              ref={laneRef}
+              ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>} 
               className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
             >
-              <div className="swimlane-header">
-                <h2>{laneStatus.replace("-", " ").toUpperCase()}</h2>
-                <button
-                  className="add-task-btn"
-                  onClick={() => {
-                    setTaskStatus(laneStatus);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                </button>
-              </div>
-              <div className="tasks">
-                {groupedTasks[laneStatus].map((task) => (
-                  <DraggableTask key={task.id} task={task} />
-                ))}
-              </div>
+              <div
+  key={laneStatus}
+  ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>}
+  className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
+>
+  <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
+
+  {laneStatus === "to-do" && (
+    <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
+      <FontAwesomeIcon icon={faPlus} /> Add Task
+    </button>
+  )}
+
+  {groupedTasks[laneStatus].map((task) => (
+    <DraggableTask key={task.id} task={task} />
+  ))}
+</div>
             </div>
           );
+
         })}
       </div>
 

@@ -1,57 +1,34 @@
 import axios from "axios";
-
+import { normaliseStatus } from "../utils/normalise";
+import {Task, TaskResponse} from "../types/task";
 const API_URL = "http://localhost:8083";
 
-type Task = {
-    id: number;
-    user_id: number;
-    project_id: number;
-    title: string;
-    description: string;
-    created_at: string;
-    status: number;
+export const addTaskToProject = async (
+  title: string,
+  description: string,
+  user_id: number,
+  project_id: number,
+): Promise<Task> => {
+  const payload = { user_id, project_id, title, description };
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No auth token found");
+
+  const response = await axios.post<TaskResponse>(
+    `${API_URL}/tasks`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const taskData = response.data.data;
+  return {
+    ...taskData,
+    status: normaliseStatus(taskData.status),
   };
-  
-  type TaskResponse = {
-    status: string;
-    data: Task;
-  };
-  
-  export const addTaskToProject = async (
-    title: string,
-    description: string,
-    user_id: number,
-    project_id: number,
-  ): Promise<Task> => {
-    const payload = {
-      user_id,
-      project_id,
-      title,
-      description,
-    };
-    const token = localStorage.getItem("token");
-    if (!token) {
-        throw new Error("No auth token found");
-      }
-  
-    console.log("Sending task payload:", payload);
-  
-    try {
-        const response = await axios.post<TaskResponse>(
-          `${API_URL}/tasks`,
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        return response.data.data;
-      } catch (error: any) {
-        console.error("Error creating task:", error.response?.data || error.message);
-        throw error;
-      }
-  };
+};
 
 
 export const fetchTasks = async (
@@ -68,14 +45,29 @@ export const fetchTaskById = async (
   return response.data;
 }
 
-export const updateTaskStatus = async (taskId: number, status: "to-do" | "in-progress" | "done") => {
+export const updateTaskStatus = async (taskId: number, status: string) => {
+  let statusValue: number;
+
+  switch (status) {
+    case "to-do":
+      statusValue = 0;
+      break;
+    case "in-progress":
+      statusValue = 1;
+      break;
+    case "done":
+      statusValue = 2;
+      break;
+    default:
+      throw new Error("Invalid status value");
+  }
     const response = await fetch(`http://localhost:8083/tasks/${taskId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ statusValue }),
     });
   
     if (!response.ok) {

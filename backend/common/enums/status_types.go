@@ -11,7 +11,7 @@ const (
 func (s TaskStatus) String() string {
 	switch s {
 	case Todo:
-		return "Todo"
+		return "To do"
 	case InProgress:
 		return "In Progress"
 	case Done:
