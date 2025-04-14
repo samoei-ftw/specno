@@ -35,8 +35,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tasks", handlers.CreateTaskHandler(taskService)).Methods("POST")
-	//r.HandleFunc("/tasks", handlers.GetProjectHandler(projectService)).Methods("GET")
-	//r.HandleFunc("/tasks/{user_id}", handlers.ListProjectHandler(projectService)).Methods("GET")
+	r.HandleFunc("/tasks/{task_id}", handlers.UpdateTaskHandler(taskService)).Methods("PUT")
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{

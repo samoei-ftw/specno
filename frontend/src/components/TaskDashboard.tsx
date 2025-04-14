@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
-import { addTaskToProject } from "../api/task";
+import { addTaskToProject, updateTaskStatus } from "../api/task";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
-
 
 interface Task {
   id: number;
@@ -44,46 +43,25 @@ export const TaskDashboard: React.FC = () => {
     "done": tasks.filter((task) => task.status === "done"),
   };
 
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
-    accept: "TASK",
-    drop: (item: { id: number }) => {
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === item.id) {
-          return { ...task, status: taskStatus };
-        }
-        return task;
-      });
-
-      setTasks(updatedTasks);
-    },
-    canDrop: (item: { id: number }) => {
-      return true; 
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-  }));
-
   const statusMap = {
     0: "to-do",
     1: "in-progress",
     2: "done",
   } as const;
-  
+
   const handleAddTask = async () => {
     if (!newTaskTitle || !newTaskDescription) return;
-  
+
     try {
       const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
-  
+
       const createdTask: Task = {
         ...rawTask,
         status: statusMap[rawTask.status as keyof typeof statusMap],
       };
-  
-      setTasks(prevTasks => [...prevTasks, createdTask]);
-  
+
+      setTasks((prevTasks) => [...prevTasks, createdTask]);
+
       setIsModalOpen(false);
       setNewTaskTitle("");
       setNewTaskDescription("");
@@ -92,38 +70,67 @@ export const TaskDashboard: React.FC = () => {
     }
   };
 
-  const dropRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className="dashboard-container">
       <h1>{projectName}</h1>
       <div className="swimlanes">
-  {["to-do", "in-progress", "done"].map((lane) => (
-    <div
-      key={lane}
-      className="swimlane"
-      onClick={() => setTaskStatus(lane as Task["status"])}
-    >
-      <div className="swimlane-header">
-        <h2>{lane.replace("-", " ").toUpperCase()}</h2>
-        <button
-          className="add-task-btn"
-          onClick={() => {
-            setTaskStatus(lane as Task["status"]);
-            setIsModalOpen(true);
-          }}
-        >
-          <FontAwesomeIcon icon={faPlus} />
-        </button>
+        {(["to-do", "in-progress", "done"] as Task["status"][]).map((laneStatus) => {
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+    accept: "TASK",
+    drop: async (item: { id: number }) => {
+      try {
+        const updatedTask = await updateTaskStatus(item.id, laneStatus);
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === item.id ? { ...task, status: laneStatus } : task
+          )
+        );
+      } catch (error) {
+        console.error("Failed to update task status:", error);
+      }
+    },
+    canDrop: () => true,
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
+  const laneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (laneRef.current) {
+      drop(laneRef.current);
+    }
+  }, [drop]);
+
+          return (
+            <div
+              key={laneStatus}
+              ref={laneRef}
+              className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
+            >
+              <div className="swimlane-header">
+                <h2>{laneStatus.replace("-", " ").toUpperCase()}</h2>
+                <button
+                  className="add-task-btn"
+                  onClick={() => {
+                    setTaskStatus(laneStatus);
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              </div>
+              <div className="tasks">
+                {groupedTasks[laneStatus].map((task) => (
+                  <DraggableTask key={task.id} task={task} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div className="tasks">
-        {groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
-          <DraggableTask key={task.id} task={task} />
-        ))}
-      </div>
-    </div>
-  ))}
-</div>
 
       {isModalOpen && (
         <div className="modal">

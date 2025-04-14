@@ -47,7 +47,7 @@ func (s *Service) CreateTask(title, description string, userId uint, projectId u
 		UserID:      userId,
 		ProjectID: projectId,
 		CreatedAt: time.Now(),
-		Status: status,
+		Status: status.String(),
 	}
 
 	if err := s.repo.Create(task); err != nil {
@@ -78,6 +78,15 @@ func (s *Service) GetTask(taskId uint) (*models.Task, error){
 	if err != nil {
 		log.Printf("Error fetching task. %d: %v", taskId, err)
 		return nil, errors.New("failed to retrieve task")
+	}
+	return &task, nil
+}
+
+func (s *Service) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (*models.Task, error){
+	task, err := s.repo.UpdateTaskStatus(taskId, status)
+	if err != nil {
+		log.Printf("Error updating task status. %d: %v", taskId, err)
+		return nil, errors.New(err.Error())
 	}
 	return &task, nil
 }

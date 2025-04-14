@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/utils"
+	dto "github.com/samoei-ftw/specno/backend/task_service/internal/models"
 	services "github.com/samoei-ftw/specno/backend/task_service/internal/services"
 )
 
@@ -130,6 +131,52 @@ func GetTaskHandler(service *services.Service) http.HandlerFunc {
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status: "success",
 			Data:   task,
+		})
+	}
+}
+func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		taskIdStr := vars["task_id"]
+		taskId, err := strconv.Atoi(taskIdStr)
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid task ID",
+			})
+			return
+		}
+
+		var updateTaskRequest dto.UpdateTaskRequest
+		if err := json.NewDecoder(r.Body).Decode(&updateTaskRequest); err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid JSON payload",
+			})
+			return
+		}
+
+		if !enums.IsValidTaskStatus(updateTaskRequest.Status) {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Invalid task status value",
+			})
+			return
+		}
+
+		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(updateTaskRequest.Status))
+		if err != nil {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: err.Error(),
+			})
+			return
+		}
+
+		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+			Status:  "success",
+			Message: "Task updated successfully",
+			Data:    task,
 		})
 	}
 }

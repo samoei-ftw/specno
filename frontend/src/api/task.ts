@@ -67,3 +67,20 @@ export const fetchTaskById = async (
   const response = await axios.get(`${API_URL}/tasks?id=${task_id}`);
   return response.data;
 }
+
+export const updateTaskStatus = async (taskId: number, status: "to-do" | "in-progress" | "done") => {
+    const response = await fetch(`http://localhost:8083/tasks/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+  
+    if (!response.ok) {
+      throw new Error("Failed to update task status");
+    }
+  
+    return response.json();
+  };

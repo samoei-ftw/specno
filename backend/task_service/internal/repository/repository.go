@@ -3,6 +3,7 @@ package internal
 import (
 	"errors"
 
+	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/models"
 	"gorm.io/gorm"
 )
@@ -40,6 +41,25 @@ func (r *Repo) GetTaskById(taskId uint) (models.Task, error) {
 
 	var task models.Task
 	if err := r.db.Where("id = ?", taskId).First(&task).Error; err != nil {
+		return models.Task{}, err
+	}
+
+	return task, nil
+}
+
+func (r *Repo) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (models.Task, error) {
+	if r.db == nil {
+		return models.Task{}, errors.New("DB connection error")
+	}
+
+	var task models.Task
+	if err := r.db.Where("id = ?", taskId).First(&task).Error; err != nil {
+		return models.Task{}, err // task not found error
+	}
+	task.Status = status.String()
+
+	// save the updated task
+	if err := r.db.Save(&task).Error; err != nil {
 		return models.Task{}, err
 	}
 

@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/samoei-ftw/specno/backend/common/enums"
 )
 
 type Task struct {
@@ -13,5 +11,5 @@ type Task struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
-	Status 		enums.TaskStatus `json:"status"`
+	Status 		string `json:"status"`
 }

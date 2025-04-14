@@ -20,3 +20,12 @@ func (s TaskStatus) String() string {
 		return "Unknown"
 	}
 }
+
+func IsValidTaskStatus(status TaskStatus) bool {
+	switch status {
+	case Todo, InProgress, Done:
+		return true
+	default:
+		return false
+	}
+}
