@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import DraggableTask from "./DraggableTask"; // Import your draggable task
 import "../styles/TaskDashboard.css";
 
 interface Task {
@@ -79,10 +80,7 @@ export const TaskDashboard: React.FC = () => {
                 <p>No tasks</p>
               ) : (
                 groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
-                  <div key={task.id} className="task-card">
-                    <h3>{task.title}</h3>
-                    <p>{task.description}</p>
-                  </div>
+                  <DraggableTask key={task.id} task={task} />
                 ))
               )}
             </div>
