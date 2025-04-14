@@ -18,10 +18,10 @@ var (
 )
 
 type Service struct {
-	repo repository.Repository
+	repo repository.Repo
 }
 
-func NewService(repo repository.Repository) *Service {
+func NewService(repo repository.Repo) *Service {
 	return &Service{repo: repo}
 }
 

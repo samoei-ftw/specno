@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
+import { addTaskToProject } from "../api/task";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
+
 
 interface Task {
   id: number;
@@ -63,19 +65,30 @@ export const TaskDashboard: React.FC = () => {
     }),
   }));
 
-  const handleAddTask = () => {
-    if (newTaskTitle && newTaskDescription) {
-      const newTask: Task = {
-        id: tasks.length + 1,
-        title: newTaskTitle,
-        description: newTaskDescription,
-        status: taskStatus,
+  const statusMap = {
+    0: "to-do",
+    1: "in-progress",
+    2: "done",
+  } as const;
+  
+  const handleAddTask = async () => {
+    if (!newTaskTitle || !newTaskDescription) return;
+  
+    try {
+      const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
+  
+      const createdTask: Task = {
+        ...rawTask,
+        status: statusMap[rawTask.status as keyof typeof statusMap],
       };
-
-      setTasks([...tasks, newTask]);
+  
+      setTasks(prevTasks => [...prevTasks, createdTask]);
+  
       setIsModalOpen(false);
       setNewTaskTitle("");
       setNewTaskDescription("");
+    } catch (error: any) {
+      console.error("Failed to create task:", error?.response?.data || error.message);
     }
   };
 
