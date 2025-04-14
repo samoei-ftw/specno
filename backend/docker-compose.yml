@@ -59,6 +59,7 @@ services:
       DB_VOLUME: pgdata
       JWT_SECRET: secret-key
       DB_CONTAINER_NAME: tasko-database
+      PORT: 8082
     ports:
       - "8082:8082"
     depends_on:
@@ -85,6 +86,7 @@ services:
       DB_VOLUME: pgdata
       JWT_SECRET: secret-key
       DB_CONTAINER_NAME: tasko-database
+      PORT: 8083
     ports:
       - "8083:8083"
     depends_on:

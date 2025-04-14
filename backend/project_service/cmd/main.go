@@ -7,6 +7,7 @@
 package main
 
 import (
+	//"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,7 +15,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/samoei-ftw/specno/backend/common/utils"
-	"github.com/samoei-ftw/specno/backend/project_service/internal"
+	internal "github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
+	repo "github.com/samoei-ftw/specno/backend/project_service/internal/repository"
+	service "github.com/samoei-ftw/specno/backend/project_service/internal/service"
 	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 )
 
@@ -26,19 +29,23 @@ func main() {
 	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8082"
+		
+		log.Fatal("Error loading port number from environment variables")
 	}
-	projectRepo := internal.NewProjectRepository(utils.GetDB())
+	projectRepo := repo.NewProjectRepository(utils.GetDB())
 
 	// Initialize project service with the repository
-	projectService := internal.NewProjectService(projectRepo)
+	projectService := service.NewProjectService(projectRepo)
 
 	// Setup router
 	r := mux.NewRouter()
 	r.HandleFunc("/projects", internal.CreateProjectHandler(projectService)).Methods("POST")
-	r.HandleFunc("/projects", internal.GetProjectHandler(projectService)).Methods("GET")
-	r.HandleFunc("/projects/{user_id}", internal.ListProjectHandler(projectService)).Methods("GET")
-	r.Handle("/projects/{project_id}/ownership", auth.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET")
+	r.HandleFunc("/projects/{id}", internal.GetProjectHandler(projectService)).Methods("GET")
+	r.HandleFunc("/projects/{id}", internal.UpdateProjectHandler(projectService)).Methods("PUT")
+	r.HandleFunc("/projects/{id}", internal.DeleteProjectHandler(projectService)).Methods("DELETE")
+
+	r.HandleFunc("/projects/{user_id}", internal.ListProjectHandler(projectService)).Methods("GET") // TODO: rename for user
+	r.Handle("/projects/{project_id}/ownership", auth.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET") // TODO: remove
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{

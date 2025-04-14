@@ -23,18 +23,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/joho/godotenv"
 )
 
 var jwtKey []byte
 
 func init() {
-	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: Could not load .env file")
-	}
-
 	// Get JWT secret key
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {

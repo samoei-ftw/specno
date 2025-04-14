@@ -8,18 +8,20 @@ package internal
 
 import (
 	"encoding/json"
-	"log"
+	//"log"
 	"net/http"
 	"strconv"
-	"strings"
+
+	//"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/utils"
-	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
+	models "github.com/samoei-ftw/specno/backend/project_service/internal/models"
+	service "github.com/samoei-ftw/specno/backend/project_service/internal/service"
 )
 
 
-func CreateProjectHandler(service *ProjectService) http.HandlerFunc {
+func CreateProjectHandler(service *service.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var projectCreateRequest struct {
 			Name        string `json:"name"`
@@ -66,7 +68,7 @@ func CreateProjectHandler(service *ProjectService) http.HandlerFunc {
 	}
 }
 
-func ListProjectHandler(service *ProjectService) http.HandlerFunc {
+func ListProjectHandler(service *service.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		vars := mux.Vars(r)
@@ -105,10 +107,11 @@ func ListProjectHandler(service *ProjectService) http.HandlerFunc {
 	}
 }
 
-func GetProjectHandler(service *ProjectService) http.HandlerFunc {
+func GetProjectHandler(service *service.ProjectService) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			projectIdStr := r.URL.Query().Get("id")
+			vars := mux.Vars(r)
+			projectIdStr := vars["id"]
 
 			projectId, err := strconv.Atoi(projectIdStr)
 			if err != nil || projectId <= 0 {
@@ -142,52 +145,82 @@ func GetProjectHandler(service *ProjectService) http.HandlerFunc {
 	}
 }
 
-func GetProjectOwnerHandler(service *ProjectService) http.HandlerFunc {
+func UpdateProjectHandler(service *service.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
+		// get id from url path
 		vars := mux.Vars(r)
-		projectIdStr := vars["project_id"]
-		//var rf := auth.ExtractTokenFromHeader(r);
+		projectIdStr := vars["id"]
+
+		/** query param extraction
+		projectIdStr := r.URL.Query().Get("id") */
+
 		projectId, err := strconv.Atoi(projectIdStr)
-		log.Printf("Invalid project id, %s", projectIdStr)
-		if err != nil {
+		// input validation
+		if err != nil || projectId <= 0 {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "Invalid project ID:",
+				Message: "Invalid project ID",
 			})
 			return
 		}
-		projectUserId, err := service.GetUserForProject(uint(projectId), tokenStr) 
+		var projectUpdateRequest models.ProjectUpdateRequest
+		if err := json.NewDecoder(r.Body).Decode(&projectUpdateRequest); err != nil {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
+				Status:  "error",
+				Message: "Bad request",
+			})
+			return
+		}
+
+		// Call the service layer to update the project
+		project, err := service.UpdateProject(projectId, projectUpdateRequest)
 		if err != nil {
 			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
 				Status:  "error",
-				Message: "Error fetching user for project",
+				Message: "Failed to update project",
 			})
 			return
 		}
-		claims, ok := r.Context().Value(auth.ClaimsKey).(*auth.Claims)
-		if !ok || claims == nil {
-			utils.RespondWithJSON(w, http.StatusUnauthorized, utils.Response{
+		if project == nil {
+			utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
 				Status:  "error",
-				Message: "Unauthorized: user ID not found",
+				Message: "Project not found",
 			})
 			return
 		}
-		log.Printf("Claims User ID: %d, Project Owner ID: %d", claims.UserID, projectUserId)
-		if uint(claims.UserID) != projectUserId {
-			utils.RespondWithJSON(w, http.StatusForbidden, utils.Response{
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+		Status: "success",
+		Data:   project,
+	})
+}
+}
+
+func DeleteProjectHandler(service *service.ProjectService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		projectIdStr := vars["id"]
+
+		projectId, err := strconv.Atoi(projectIdStr)
+		if err != nil || projectId <= 0 {
+			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
-				Message: "User is not the project owner",
+				Message: "Invalid project ID",
 			})
 			return
 		}
-		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
-			Status: "success",
-			Data: utils.GetOwnerResponse{
-				IsOwner: true,
-			},
-		})
-	}
+		isDeleted, err := service.DeleteProject(projectId)
+		if isDeleted != true {
+			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
+				Status:  "error",
+				Message: "Failed to delete project",
+			})
+			return
+		}
+
+	utils.RespondWithJSON(w, http.StatusOK, utils.Response{
+		Status: "success",
+		Data:   "Project deleted", // TODO: fix this
+	})
+}
 }
