@@ -6,20 +6,21 @@ import (
 	"github.com/samoei-ftw/specno/backend/common/models"
 	"gorm.io/gorm"
 )
-
-
+type Repo struct {
+	db *gorm.DB
+}
 func NewRepository(db *gorm.DB) Repository {
-	return &repo{db}
+	return &Repo{db: db}
 }
 
-func (r *repo) Create(task *models.Task) error {
+func (r *Repo) Create(task *models.Task) error {
 	if r.db == nil {
 		return errors.New("DB connection not initialized")
 	}
 	return r.db.Create(task).Error
 }
 
-func (r *repo) ListTasksForProject(projectId uint) ([]models.Task, error) {
+func (r *Repo) ListTasksForProject(projectId uint) ([]models.Task, error) {
 	if r.db == nil {
 		return nil, errors.New("DB connection error")
 	}
@@ -32,7 +33,7 @@ func (r *repo) ListTasksForProject(projectId uint) ([]models.Task, error) {
 	return tasks, nil
 }
 
-func (r *repo) GetTaskById(taskId uint) (models.Task, error) {
+func (r *Repo) GetTaskById(taskId uint) (models.Task, error) {
 	if r.db == nil {
 		return models.Task{}, errors.New("DB connection error")
 	}

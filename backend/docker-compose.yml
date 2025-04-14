@@ -63,7 +63,7 @@ services:
       - "8082:8082"
     depends_on:
       - user-service
-    command: ["bash", "-c", "./wait-for-it.sh user-service:8080 -- /project-api"]
+    command: ["dockerize", "-wait", "tcp://user-service:8080", "-timeout", "30s", "/project-api"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 10s
@@ -89,16 +89,9 @@ services:
       - "8083:8083"
     depends_on:
       - project-service
-    command: ["bash", "-c", "./wait-for-it.sh project-service:8082 -- /task-api"]
+    command: ["dockerize", "-wait", "tcp://project-service:8082", "-timeout", "30s", "/task-api"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
       interval: 10s
       retries: 5
-      start_period: 20s    
-
-volumes:
-  pgdata:
-
-  networks:
-  specno-network:
-    driver: bridge
+      start_period: 20s   

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import DraggableTask from "./DraggableTask"; // Import your draggable task
+import DraggableTask from "./DraggableTask";
+import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
 
 interface Task {
@@ -41,10 +42,31 @@ export const TaskDashboard: React.FC = () => {
     "done": tasks.filter((task) => task.status === "done"),
   };
 
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+    accept: "TASK",
+    drop: (item: { id: number }) => {
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === item.id) {
+          return { ...task, status: taskStatus };
+        }
+        return task;
+      });
+
+      setTasks(updatedTasks);
+    },
+    canDrop: (item: { id: number }) => {
+      return true; 
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
   const handleAddTask = () => {
     if (newTaskTitle && newTaskDescription) {
       const newTask: Task = {
-        id: tasks.length + 1, // Temporary ID generation
+        id: tasks.length + 1,
         title: newTaskTitle,
         description: newTaskDescription,
         status: taskStatus,
@@ -57,36 +79,38 @@ export const TaskDashboard: React.FC = () => {
     }
   };
 
+  const dropRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="dashboard-container">
       <h1>{projectName}</h1>
       <div className="swimlanes">
-        {["to-do", "in-progress", "done"].map((lane) => (
-          <div key={lane} className="swimlane">
-            <div className="swimlane-header">
-              <h2>{lane.replace("-", " ").toUpperCase()}</h2>
-              <button
-                className="add-task-btn"
-                onClick={() => {
-                  setTaskStatus(lane as "to-do" | "in-progress" | "done");
-                  setIsModalOpen(true);
-                }}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
-            </div>
-            <div className="tasks">
-              {groupedTasks[lane as keyof typeof groupedTasks].length === 0 ? (
-                <p>No tasks</p>
-              ) : (
-                groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
-                  <DraggableTask key={task.id} task={task} />
-                ))
-              )}
-            </div>
-          </div>
+  {["to-do", "in-progress", "done"].map((lane) => (
+    <div
+      key={lane}
+      className="swimlane"
+      onClick={() => setTaskStatus(lane as Task["status"])}
+    >
+      <div className="swimlane-header">
+        <h2>{lane.replace("-", " ").toUpperCase()}</h2>
+        <button
+          className="add-task-btn"
+          onClick={() => {
+            setTaskStatus(lane as Task["status"]);
+            setIsModalOpen(true);
+          }}
+        >
+          <FontAwesomeIcon icon={faPlus} />
+        </button>
+      </div>
+      <div className="tasks">
+        {groupedTasks[lane as keyof typeof groupedTasks].map((task) => (
+          <DraggableTask key={task.id} task={task} />
         ))}
       </div>
+    </div>
+  ))}
+</div>
 
       {isModalOpen && (
         <div className="modal">

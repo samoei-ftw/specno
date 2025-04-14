@@ -1,60 +1,81 @@
 .dashboard-container {
-  padding: 3rem 1.5rem;
+  padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f7fb;
+  background-color: #e6e8ec;
   min-height: 100vh;
   color: #333;
+  overflow-x: auto;
 }
 
 .swimlanes {
   display: flex;
-  gap: 2rem;
-  justify-content: space-between;
-  margin-top: 3rem;
+  gap: 1.5rem;
+  justify-content: flex-start;
+  margin-top: 2rem;
+  overflow-x: auto;
 }
 
 .swimlane {
-  width: 30%;
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background-color: #f4f5f7;
+  box-shadow: 0 1px 4px rgba(9, 30, 66, 0.1);
+  max-width: 300px;
+  min-width: 280px;
 }
 
 .swimlane-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: #44546f;
+  text-transform: uppercase;
 }
 
 .swimlane-header h2 {
-  font-size: 1.5rem;
-  color: #444;
+  font-size: 1rem;
+  color: #172b4d;
+  font-weight: 600;
 }
 
 .add-task-btn {
-  background-color: transparent;
+  background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  color: #7e5bef;
+  color: #5e6c84;
   transition: color 0.3s;
 }
 
 .add-task-btn:hover {
-  color: #6844d9;
+  color: #172b4d;
 }
 
 .tasks {
-  margin-top: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-right: 6px;
 }
 
 .task-card {
-  background-color: #f9f9f9;
-  padding: 1rem;
-  margin: 1rem 0;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(9, 30, 66, 0.15);
+  border-left: none;
+  padding: 1rem;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card:hover {
+  box-shadow: 0 4px 8px rgba(9, 30, 66, 0.15);
 }
 
 .modal {
@@ -68,6 +89,7 @@
   justify-content: center;
   align-items: center;
   animation: fadeIn 0.3s ease-in-out;
+  outline: none;
 }
 
 .modal-content {
@@ -80,6 +102,8 @@
   flex-direction: column;
   gap: 1rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  touch-action: none;
 }
 
 .modal-content input,
@@ -119,4 +143,8 @@
   100% {
     opacity: 1;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
