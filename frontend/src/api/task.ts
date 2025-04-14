@@ -45,18 +45,18 @@ export const fetchTaskById = async (
   return response.data;
 }
 
-export const updateTaskStatus = async (taskId: number, status: string) => {
-  let statusValue: number;
+export const updateTaskStatus = async (taskId: number, statusInput: string) => {
+  let status: number;
 
-  switch (status) {
+  switch (statusInput) {
     case "to-do":
-      statusValue = 0;
+      status = 0;
       break;
     case "in-progress":
-      statusValue = 1;
+      status = 1;
       break;
     case "done":
-      statusValue = 2;
+      status = 2;
       break;
     default:
       throw new Error("Invalid status value");
@@ -67,11 +67,15 @@ export const updateTaskStatus = async (taskId: number, status: string) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ statusValue }),
+      body: JSON.stringify({ status }),
     });
+    
   
     if (!response.ok) {
       throw new Error("Failed to update task status");
+    }
+    else{
+      console.log(`Successfully updated task status to ${status}`)
     }
   
     return response.json();

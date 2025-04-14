@@ -21,11 +21,6 @@ func (s TaskStatus) String() string {
 	}
 }
 
-func IsValidTaskStatus(status TaskStatus) bool {
-	switch status {
-	case Todo, InProgress, Done:
-		return true
-	default:
-		return false
-	}
+func IsValidTaskStatus(status int) bool {
+	return status >= 0 && status <= 2
 }

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/models"
@@ -48,6 +49,7 @@ func (r *Repo) GetTaskById(taskId uint) (models.Task, error) {
 }
 
 func (r *Repo) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (models.Task, error) {
+	fmt.Printf("Fetching task and updating to ->", status.String())
 	if r.db == nil {
 		return models.Task{}, errors.New("DB connection error")
 	}
@@ -56,12 +58,14 @@ func (r *Repo) UpdateTaskStatus(taskId uint, status enums.TaskStatus) (models.Ta
 	if err := r.db.Where("id = ?", taskId).First(&task).Error; err != nil {
 		return models.Task{}, err // task not found error
 	}
+	fmt.Printf("Before update - Task: %v\n", task)
 	task.Status = status.String()
 
 	// save the updated task
 	if err := r.db.Save(&task).Error; err != nil {
+		fmt.Printf("Failed to save task with ID %d: %v\n", taskId, err)
 		return models.Task{}, err
 	}
-
+	fmt.Printf("After update - Task: %v\n", task)
 	return task, nil
 }

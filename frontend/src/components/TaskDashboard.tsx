@@ -7,7 +7,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
-import { Task, TaskStatus } from "../types/task";
+import { Task } from "../types/task";
 import { normaliseStatus } from "../utils/normalise";
 
 export const TaskDashboard: React.FC = () => {
@@ -17,7 +17,6 @@ export const TaskDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [newTaskTitle, setNewTaskTitle] = useState<string>("");
   const [newTaskDescription, setNewTaskDescription] = useState<string>("");
-  const [taskStatus, setTaskStatus] = useState<"to-do" | "in-progress" | "done">("to-do");
 
   useEffect(() => {
     if (projectId) {
@@ -38,21 +37,19 @@ export const TaskDashboard: React.FC = () => {
     "done": tasks.filter((task) => task.status === "done"),
   };
 
-
-
   const handleAddTask = async () => {
     if (!newTaskTitle || !newTaskDescription) return;
-  
+
     try {
       const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
-  
+
       const createdTask: Task = {
         ...rawTask,
         status: normaliseStatus(rawTask.status),
       };
-  
+
       setTasks((prevTasks) => [...prevTasks, createdTask]);
-  
+
       setIsModalOpen(false);
       setNewTaskTitle("");
       setNewTaskDescription("");
@@ -69,11 +66,18 @@ export const TaskDashboard: React.FC = () => {
           const [{ isOver, canDrop }, connectDropTarget] = useDrop(() => ({
             accept: "TASK",
             drop: async (item: { id: number }) => {
+              //console.log("About to update task with id", item.id, "to status", laneStatus);
+
               try {
-                const updatedTask = await updateTaskStatus(item.id, laneStatus);
+                const normalizedStatus = normaliseStatus(laneStatus);
+                console.log(`Normalized status: ${normalizedStatus}`);
+                const updatedTask = await updateTaskStatus(item.id, normalizedStatus);
+
+                //console.log("Updated task:", updatedTask);
+
                 setTasks((prevTasks) =>
                   prevTasks.map((task) =>
-                    task.id === item.id ? { ...task, status: laneStatus } : task
+                    task.id === item.id ? { ...task, status: normalizedStatus } : task
                   )
                 );
               } catch (error) {
@@ -86,33 +90,26 @@ export const TaskDashboard: React.FC = () => {
               canDrop: monitor.canDrop(),
             }),
           }));
-          
+
           return (
             <div
               key={laneStatus}
-              ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>} 
+              ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>}
               className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
             >
-              <div
-  key={laneStatus}
-  ref={connectDropTarget as unknown as React.RefObject<HTMLDivElement>}
-  className={`swimlane ${isOver && canDrop ? "highlight" : ""}`}
->
-  <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
+              <h2 className="swimlane-title">{laneStatus.replace("-", " ").toUpperCase()}</h2>
 
-  {laneStatus === "to-do" && (
-    <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
-      <FontAwesomeIcon icon={faPlus} /> Add Task
-    </button>
-  )}
+              {laneStatus === "to-do" && (
+                <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
+                  <FontAwesomeIcon icon={faPlus} /> Add Task
+                </button>
+              )}
 
-  {groupedTasks[laneStatus].map((task) => (
-    <DraggableTask key={task.id} task={task} />
-  ))}
-</div>
+              {groupedTasks[laneStatus].map((task) => (
+                <DraggableTask key={task.id} task={task} />
+              ))}
             </div>
           );
-
         })}
       </div>
 

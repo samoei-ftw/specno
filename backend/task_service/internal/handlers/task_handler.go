@@ -1,7 +1,10 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -136,6 +139,11 @@ func GetTaskHandler(service *services.Service) http.HandlerFunc {
 }
 func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// just checking what fe is sending to backend
+		body, _ := io.ReadAll(r.Body)
+		fmt.Println("Raw body:", string(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body)) 
+
 		vars := mux.Vars(r)
 		taskIdStr := vars["task_id"]
 		taskId, err := strconv.Atoi(taskIdStr)
@@ -155,7 +163,7 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			})
 			return
 		}
-
+		fmt.Printf("Decoded updateTaskRequest: %+v\n", updateTaskRequest)
 		if !enums.IsValidTaskStatus(updateTaskRequest.Status) {
 			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
 				Status:  "error",
@@ -163,16 +171,19 @@ func UpdateTaskHandler(service *services.Service) http.HandlerFunc {
 			})
 			return
 		}
-
-		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(updateTaskRequest.Status))
+		
+		status := updateTaskRequest.Status
+		fmt.Printf("Request status is: %s", status) //bug
+		task, err := service.UpdateTaskStatus(uint(taskId), enums.TaskStatus(status))
 		if err != nil {
+			fmt.Printf("Error in updating task status: %v\n", err)
 			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
 				Status:  "error",
 				Message: err.Error(),
 			})
 			return
 		}
-
+		//fmt.Printf("Task updated successfully: %v\n", task)
 		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
 			Status:  "success",
 			Message: "Task updated successfully",

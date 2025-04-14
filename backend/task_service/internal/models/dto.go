@@ -1,7 +1,5 @@
 package internal
 
-import "github.com/samoei-ftw/specno/backend/common/enums"
-
 type CreateTaskRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -9,5 +7,5 @@ type CreateTaskRequest struct {
 }
 
 type UpdateTaskRequest struct {
-	Status enums.TaskStatus `json:"status" validate:"required"`
+	Status int `json:"status" validate:"required"`
 }
