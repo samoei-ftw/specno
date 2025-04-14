@@ -42,7 +42,7 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:5173"}, // TODO: remove hardcoding
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 
 	handler := c.Handler(r)

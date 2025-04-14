@@ -65,26 +65,30 @@ export const TaskDashboard: React.FC = () => {
     }),
   }));
 
+  const statusMap = {
+    0: "to-do",
+    1: "in-progress",
+    2: "done",
+  } as const;
+  
   const handleAddTask = async () => {
-    if (newTaskTitle && newTaskDescription) {
-      try {
-        const createdTask = await addTaskToProject(
-          newTaskTitle,
-          newTaskDescription,
-          148,  //TODO
-          62 
-        );
+    if (!newTaskTitle || !newTaskDescription) return;
   
-        // append the newly created task to the local task list
-        setTasks([...tasks, createdTask]);
+    try {
+      const rawTask = await addTaskToProject(newTaskTitle, newTaskDescription, 149, 63);
   
-        // reset form state
-        setIsModalOpen(false);
-        setNewTaskTitle("");
-        setNewTaskDescription("");
-      } catch (error) {
-        console.error("Failed to create task:", error);
-      }
+      const createdTask: Task = {
+        ...rawTask,
+        status: statusMap[rawTask.status as keyof typeof statusMap],
+      };
+  
+      setTasks(prevTasks => [...prevTasks, createdTask]);
+  
+      setIsModalOpen(false);
+      setNewTaskTitle("");
+      setNewTaskDescription("");
+    } catch (error: any) {
+      console.error("Failed to create task:", error?.response?.data || error.message);
     }
   };
 
