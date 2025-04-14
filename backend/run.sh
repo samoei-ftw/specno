@@ -1,7 +1,7 @@
     #!/bin/sh
-    # Starts PostgreSQL in a local Docker container and runs migrations
+    # Rebuilds and starts the full microservices stack (API gateway + services) using Docker Compose
     # Author: Samoei Oloo
-    # Created: 2025-03-28
+    # Updated: 2025-04-14
 
     echo "Stopping all containers and removing volumes..."
     docker-compose down -v
