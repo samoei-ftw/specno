@@ -93,8 +93,7 @@ You can access the Postman collection here:
 
 1. Ensure the backend services and database are running (`./db.sh` and `./run.sh`).
 2. Open Postman and import the collection or access it through the shared link.
-3. Use the collection to:
-   - TODO- add list of tests here
+3. Use the collection to run all the tests you'd like
 
 ### Notes
 
