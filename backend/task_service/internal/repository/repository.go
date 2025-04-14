@@ -9,8 +9,8 @@ import (
 type Repo struct {
 	db *gorm.DB
 }
-func NewRepository(db *gorm.DB) Repository {
-	return &Repo{db: db}
+func NewRepository(db *gorm.DB) Repo {
+	return Repo{db: db}
 }
 
 func (r *Repo) Create(task *models.Task) error {

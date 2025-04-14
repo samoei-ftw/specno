@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProjectById } from "../api/project";
+import { addTaskToProject } from "../api/task";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import DraggableTask from "./DraggableTask";
 import { useDrop } from "react-dnd";
 import "../styles/TaskDashboard.css";
+
 
 interface Task {
   id: number;
@@ -63,19 +65,26 @@ export const TaskDashboard: React.FC = () => {
     }),
   }));
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (newTaskTitle && newTaskDescription) {
-      const newTask: Task = {
-        id: tasks.length + 1,
-        title: newTaskTitle,
-        description: newTaskDescription,
-        status: taskStatus,
-      };
-
-      setTasks([...tasks, newTask]);
-      setIsModalOpen(false);
-      setNewTaskTitle("");
-      setNewTaskDescription("");
+      try {
+        const createdTask = await addTaskToProject(
+          newTaskTitle,
+          newTaskDescription,
+          148,  //TODO
+          62 
+        );
+  
+        // append the newly created task to the local task list
+        setTasks([...tasks, createdTask]);
+  
+        // reset form state
+        setIsModalOpen(false);
+        setNewTaskTitle("");
+        setNewTaskDescription("");
+      } catch (error) {
+        console.error("Failed to create task:", error);
+      }
     }
   };
 
