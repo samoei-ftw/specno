@@ -8,7 +8,6 @@ RUN go mod tidy
 COPY ./common /app/common
 COPY ./gateways /app/gateways
 COPY ./database /app/database
-COPY ./wait-for-it.sh /wait-for-it.sh
 
 WORKDIR /app/user_service
 COPY ./user_service /app/user_service
@@ -23,7 +22,6 @@ FROM alpine:latest
 RUN apk add --no-cache bash ca-certificates curl
 
 COPY --from=user_build /user-api /user-api
-COPY --from=user_build /wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /user-api
 
 EXPOSE 8080

@@ -9,6 +9,7 @@ import (
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/models"
 	"github.com/samoei-ftw/specno/backend/gateways"
+	repository "github.com/samoei-ftw/specno/backend/task_service/internal/repository"
 )
 
 var (
@@ -16,16 +17,16 @@ var (
 	projectGateway = gateways.ProjectGatewayInit()
 )
 
-type service struct {
-	repo Repository
+type Service struct {
+	repo repository.Repository
 }
 
-func NewService(repo Repository) *service {
-	return &service{repo: repo}
+func NewService(repo repository.Repository) *Service {
+	return &Service{repo: repo}
 }
 
 // Adds a task to a project
-func (s *service) CreateTask(title, description string, userId uint, projectId uint, status enums.TaskStatus, bearer string) (*models.Task, error) {
+func (s *Service) CreateTask(title, description string, userId uint, projectId uint, status enums.TaskStatus, bearer string) (*models.Task, error) {
 	log.Printf("Validating task request project id: %s", strconv.FormatUint(uint64(projectId), 10))
 	//Validate project belongs to user
 	isOwner, err := projectGateway.UserOwnsProject(projectId, bearer)
@@ -58,7 +59,7 @@ func (s *service) CreateTask(title, description string, userId uint, projectId u
 }
 
 // Lists all tasks for a project
-func (s *service) ListTasks(projectId uint) ([]*models.Task, error) {
+func (s *Service) ListTasks(projectId uint) ([]*models.Task, error) {
 	taskList, err := s.repo.ListTasksForProject(projectId)
 	if err != nil {
 		log.Printf("Error fetching tasks for project %d: %v", projectId, err)
@@ -72,7 +73,7 @@ func (s *service) ListTasks(projectId uint) ([]*models.Task, error) {
 	return tasks, nil
 }
 
-func (s *service) GetTask(taskId uint) (*models.Task, error){
+func (s *Service) GetTask(taskId uint) (*models.Task, error){
 	task, err := s.repo.GetTaskById(taskId)
 	if err != nil {
 		log.Printf("Error fetching task. %d: %v", taskId, err)

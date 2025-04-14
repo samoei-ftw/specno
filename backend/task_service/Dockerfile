@@ -1,18 +1,19 @@
 FROM golang:1.24.1 AS task_build
 
+ADD https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz /tmp/
+RUN tar -C /usr/local/bin -xzvf /tmp/dockerize-linux-amd64-v0.6.1.tar.gz
+
 WORKDIR /app
 
 COPY ./go.mod ./go.sum ./
 RUN go mod tidy
+WORKDIR /app/task_service
 
 COPY . .
-COPY ./wait-for-it.sh /wait-for-it.sh
-WORKDIR /app/task_service
 COPY ./task_service /app/task_service
 
 ENV GOARCH=amd64
 ENV GOOS=linux
-
 
 RUN go build -o /task-api ./cmd/main.go
 
@@ -20,10 +21,8 @@ FROM alpine:latest
 
 RUN apk add --no-cache bash ca-certificates curl
 COPY --from=task_build /task-api /task-api
-COPY --from=task_build /wait-for-it.sh /wait-for-it.sh
-WORKDIR /
-RUN chmod +x /task-api /wait-for-it.sh
+COPY --from=task_build /usr/local/bin/dockerize /usr/local/bin/dockerize
 
 EXPOSE 8083
 
-CMD ["bash", "-c", "./wait-for-it.sh project-service:8082 -- /task-api"]
+CMD ["sh", "-c", "dockerize -wait tcp://project-service:8082 -timeout 30s /task-api"]

@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	//"strings"
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/enums"
 	"github.com/samoei-ftw/specno/backend/common/utils"
+	services "github.com/samoei-ftw/specno/backend/task_service/internal/services"
 )
 
-func CreateTaskHandler(service *service) http.HandlerFunc {
+func CreateTaskHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tokenStr := r.Header.Get("Authorization")
 
@@ -59,7 +59,7 @@ func CreateTaskHandler(service *service) http.HandlerFunc {
 	}
 }
 
-func ListTasksHandler(service *service) http.HandlerFunc {
+func ListTasksHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		projIdStr := vars["project_id"]
@@ -97,7 +97,7 @@ func ListTasksHandler(service *service) http.HandlerFunc {
 	}
 }
 
-func GetTaskHandler(service *service) http.HandlerFunc {
+func GetTaskHandler(service *services.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		taskIdStr := r.URL.Query().Get("id")
 

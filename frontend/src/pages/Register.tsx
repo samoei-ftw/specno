@@ -2,27 +2,9 @@ import React, { useState } from "react";
 import { useRegister } from "../hooks/useRegister";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
-import "../styles/Register.css";
+import "../styles/AuthForm.css";
 
-const FadeButton: React.FC<{ title: string; onClick: () => void }> = ({ title, onClick }) => {
-    const [hover, setHover] = useState(false);
-
-    return (
-        <button
-            className={`fade-button ${hover ? "hover" : ""}`}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-            onClick={onClick}
-        >
-            {title}
-        </button>
-    );
-};
-
-const ErrorModal: React.FC<{ errorMessage: string; onClose: () => void }> = ({
-    errorMessage,
-    onClose,
-}) => (
+const ErrorModal = ({ errorMessage, onClose }: { errorMessage: string; onClose: () => void }) => (
     <div className="error-modal">
         <div className="modal-content">
             <h2>Error</h2>
@@ -32,10 +14,9 @@ const ErrorModal: React.FC<{ errorMessage: string; onClose: () => void }> = ({
     </div>
 );
 
-const Register = () => {
+export default function Register() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [credentials, setCredentials] = useState({ email: "", password: "" });
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -47,76 +28,76 @@ const Register = () => {
         data: loginData,
     } = useLogin();
 
-    const handleSubmit = () => {
-        mutate({ email, password });
+    const handleChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = ev.target;
+        setCredentials({ ...credentials, [name]: value });
+    };
+
+    const handleRegister = () => {
+        mutate(credentials);
     };
 
     const handleLogin = () => {
-        mutateLogin(
-            { email, password },
-            {
-                onSuccess: (response) => {
-                    
-                    //console.log('Login response:', response);
-                    const token = response?.token;
-                    //console.log('Token:', token);
-                    
-                    if (token) {
-                        localStorage.setItem("token", token);
-                        navigate("/projects");
-                    } else {
-                        console.error('Token not found in response');
-                        setShowErrorModal(true);
-                        setErrorMessage("Failed to retrieve token from response.");
-                    }
-                },
-                onError: (error) => {
-                    //console.error('Login error:', error);
+        mutateLogin(credentials, {
+            onSuccess: (response) => {
+                const token = response?.token;
+                if (token) {
+                    localStorage.setItem("token", token);
+                    navigate("/projects");
+                } else {
                     setShowErrorModal(true);
-                    setErrorMessage(error.message || "An error occurred while logging in.");
-                },
-            }
-        );
+                    setErrorMessage("Failed to retrieve token from response.");
+                }
+            },
+            onError: (error: any) => {
+                setShowErrorModal(true);
+                setErrorMessage(error.message || "An error occurred while logging in.");
+            },
+        });
     };
 
     return (
-        <div className="register-container">
-            <h1 className="register-title">Tasko</h1>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="register-input"
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="register-input"
-            />
-            <FadeButton title={isPending ? "Registering..." : "Register"} onClick={handleSubmit} />
-            <FadeButton title={isLoginPending ? "Logging in..." : "Login"} onClick={handleLogin} />
-            {(error || loginError) && (
-                <p className="error-text">
-                    Error: {(error || loginError)?.message}
-                </p>
-            )}
-            {(data || loginData) && (
-                <p className="success-text">
-                    {data ? "Registered successfully!" : "Logged in!"}
-                </p>
-            )}
-            
-            {showErrorModal && (
-                <ErrorModal
-                    errorMessage={errorMessage}
-                    onClose={() => setShowErrorModal(false)}
+        <section className="auth-page">
+            <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+                <h1 className="auth-title">Tasko</h1>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    value={credentials.email}
+                    onChange={handleChange}
+                    required
                 />
-            )}
-        </div>
-    );
-};
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={credentials.password}
+                    onChange={handleChange}
+                    required
+                />
+                <button className="btn" onClick={handleRegister}>
+                    {isPending ? "Registering..." : "Register"}
+                </button>
+                <button className="btn" onClick={handleLogin}>
+                    {isLoginPending ? "Logging in..." : "Login"}
+                </button>
 
-export default Register;
+                {(error || loginError) && (
+                    <p className="error-text">
+                        {(error || loginError)?.message}
+                    </p>
+                )}
+                {(data || loginData) && (
+                    <p className="success-text">
+                        {data ? "Registered successfully!" : "Logged in!"}
+                    </p>
+                )}
+            </form>
+
+            {showErrorModal && (
+                <ErrorModal errorMessage={errorMessage} onClose={() => setShowErrorModal(false)} />
+            )}
+        </section>
+    );
+}
