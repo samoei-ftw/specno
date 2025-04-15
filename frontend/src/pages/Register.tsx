@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useRegister } from "../hooks/useRegister";
-import { useLogin } from "../hooks/useLogin";
+import { useRegister } from "../hooks/register-user";
+import { login } from "../hooks/login";
 import { useNavigate } from "react-router-dom";
 import "../styles/AuthForm.scss";
 
@@ -26,7 +26,7 @@ export default function Register() {
         isPending: isLoginPending,
         error: loginError,
         data: loginData,
-    } = useLogin();
+    } = login();
 
     const handleChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = ev.target;

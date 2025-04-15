@@ -17,7 +17,7 @@ export interface TaskResponse {
     id: number;
     title: string;
     description: string;
-    status: string; // string bc from backend
+    status: string; // still raw from backend
     user_id: number;
     project_id: number;
     created_at: string;

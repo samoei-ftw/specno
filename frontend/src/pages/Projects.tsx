@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useAddProject, useFetchProject } from "../hooks/useProject";
+import { getProject } from "../hooks/get-project";
+import {addProject} from "../hooks/add-project";
 import { useNavigate } from "react-router-dom";
-import { User } from "../models/User";
-import { Project } from "../models/Project"; 
+import type { Task, User, Project } from "../types/index";
 import "../styles/Projects.scss";
 
 const Projects: React.FC = () => {
@@ -11,8 +11,8 @@ const Projects: React.FC = () => {
   const [projectDescription, setProjectDescription] = useState<string>("");
   // TODO: fetch user
   const user: User = { id: 148, name: "Jane" }; 
-  const { data: fetchedProjects, refetch } = useFetchProject(user.id);
-  const { mutateAsync } = useAddProject(); 
+  const { data: fetchedProjects, refetch } = getProject(user.id);
+  const { mutateAsync } = addProject(); 
   const navigate = useNavigate();
 
 
