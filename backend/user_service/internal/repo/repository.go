@@ -14,6 +14,7 @@ type UserRepository interface {
 	Create(user *models.User) (uint, error)
 	GetUserByID(userID int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
+	Upsert(user *models.User) (*models.User, error)
 }
 
 type userRepo struct {
@@ -54,4 +55,11 @@ func (u *userRepo) GetUserByID(userID int) (*models.User, error) {
 		return nil, result.Error
 	}
 	return &user, nil
+}
+
+func (u *userRepo) Upsert(user *models.User) (*models.User, error) {
+	if err := u.db.Save(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }

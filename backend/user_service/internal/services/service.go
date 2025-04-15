@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/samoei-ftw/specno/backend/common/models"
+	dto "github.com/samoei-ftw/specno/backend/user_service/internal/models"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/repo"
 
 	"golang.org/x/crypto/bcrypt"
@@ -59,4 +60,35 @@ func (s *UserService) GetUserByID(userID int) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (s *UserService) UpsertUser(upsertUser dto.UpsertUser) (*models.User, error) {
+	user := &models.User{}
+	if upsertUser.UserID == nil {
+		return nil, errors.New("user ID is required for update")
+	}
+	if upsertUser.UserID != nil {
+		existingUser, err := s.repo.GetUserByID(int(*upsertUser.UserID))
+		if err != nil {
+			return nil, err
+		}
+
+		if existingUser != nil {
+			user = existingUser
+		}
+	}
+	// TODO: validation
+	if upsertUser.Email != nil {
+		user.Email = *upsertUser.Email
+	}
+	if upsertUser.Password != nil {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*upsertUser.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, errors.New("failed to hash password")
+		}
+		user.Password = string(hashedPassword)
+	}
+
+	return s.repo.Upsert(user)
+
 }

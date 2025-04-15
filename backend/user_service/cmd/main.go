@@ -32,7 +32,7 @@ func main() {
     userService := userService.NewUserService(userRepo)
 	r := mux.NewRouter()
     // Register routes with handlers, injecting the userService instance
-	r.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		handlers.RegisterHandler(w, r, userService)
 	}).Methods("POST")
 
@@ -43,6 +43,15 @@ func main() {
 	r.HandleFunc("/users/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		handlers.FetchUserHandler(w, r, userService)
 	}).Methods("GET")
+	
+	// partial update of a user
+	r.HandleFunc("/users/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.PatchUserHandler(w, r, userService)
+	}).Methods("PATCH")
+
+	r.HandleFunc("/users/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.DeleteUserHandler(w, r, userService)
+	}).Methods("DELETE")
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{
