@@ -27,5 +27,5 @@ CREATE TABLE IF NOT EXISTS tasks (
     description TEXT,
     due_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );

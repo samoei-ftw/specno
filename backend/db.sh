@@ -25,7 +25,7 @@ docker run -d \
     -e POSTGRES_PASSWORD=$DB_PASSWORD \
     -e POSTGRES_DB=$DB_NAME \
     -p $DB_PORT:5432 \
-    -v $DB_VOLUME:/var/lib/postgresql/data \
+    --tmpfs /var/lib/postgresql/data \
     -v $PWD/database:/migrations \
     postgres:latest
 
@@ -34,12 +34,12 @@ until docker exec -i $DB_CONTAINER_NAME pg_isready -U $DB_USER >/dev/null 2>&1; 
 done
 
 echo "Performing migrations..."
-docker exec $DB_CONTAINER_NAME bash -c '
+docker exec $DB_CONTAINER_NAME bash -c "
 for file in /migrations/*.sql; do
-    echo "Applying migration: $file"
-    psql -U '"$DB_USER"' -d '"$DB_NAME"' < "$file"
+    echo \"Applying migration: \$file\"
+    psql -U $DB_USER -d $DB_NAME < \"\$file\"
 done
-'
+"
 
 echo "All migrations applied successfully."
 
