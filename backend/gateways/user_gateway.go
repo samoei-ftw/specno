@@ -36,22 +36,30 @@ func UserGatewayInit() *UserGateway {
 	}
 }
 
-func (g *UserGateway) ValidateUserId(userID uint) (bool, error) {
+func (g *UserGateway) ValidateUserId(userID uint) (exists bool, isAdmin bool, err error) {
 	url := fmt.Sprintf("%s/users/%d", g.BaseURL, userID)
 
 	resp, err := g.HTTPClient.Get(url)
 	if err != nil {
-		return false, fmt.Errorf("Gateway error: %w", err)
+		return false, false, fmt.Errorf("gateway error: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("User service returned status: %d", resp.StatusCode)
+		return false, false, fmt.Errorf("user service returned status: %d", resp.StatusCode)
 	}
 
 	var userResponse models.UserResponse
 	if err := json.NewDecoder(resp.Body).Decode(&userResponse); err != nil {
-		return false, fmt.Errorf("Error interpreting response: %w", err)
+		return false, false, fmt.Errorf("error interpreting response: %w", err)
 	}
-	return true, nil
+
+	switch userResponse.Role {
+	case "user":
+		return true, true, nil
+	case "admin":
+		return true, true, nil
+	default:
+		return false, false, fmt.Errorf("denied")
+	}
 }

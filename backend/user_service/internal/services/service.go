@@ -44,7 +44,7 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 		Email:    email,
 		Password: string(hashedPassword),
 	}
-
+	user.Role = "user"
 	userID, err := s.repo.Create(&user)
 	if err != nil {
 		log.Println("Error saving user to DB:", err)

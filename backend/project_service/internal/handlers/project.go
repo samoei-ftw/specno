@@ -48,7 +48,8 @@ func CreateProjectHandler(service *service.ProjectService) http.HandlerFunc {
 				utils.RespondWithErrorMessage(w, http.StatusNotFound, "User not found")
 				return
 			}
-			utils.RespondWithErrorMessage(w, http.StatusInternalServerError, "Failed to create project")
+			if err.Error() == "no permissions"{
+			utils.RespondWithErrorMessage(w, http.StatusUnauthorized, "User is not allowed to create a project. Please login with different credentials")}
 			return
 		}
 
