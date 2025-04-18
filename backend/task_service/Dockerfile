@@ -6,14 +6,14 @@ RUN tar -C /usr/local/bin -xzvf /tmp/dockerize-linux-amd64-v0.6.1.tar.gz
 WORKDIR /app
 
 COPY ./go.mod ./go.sum ./
+RUN go mod tidy
+
 COPY ./common /app/common
 COPY ./gateways /app/gateways
 COPY ./user_service /app/user_service
 COPY ./project_service /app/project_service
 COPY ./database /app/database
 COPY ./task_service /app/task_service
-
-RUN go mod tidy
 
 WORKDIR /app/task_service
 

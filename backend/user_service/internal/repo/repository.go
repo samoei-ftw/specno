@@ -15,6 +15,7 @@ type UserRepository interface {
 	GetUserByID(userID int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 	Upsert(user *models.User) (*models.User, error)
+	DeleteUser(user *models.User) (bool, error)
 }
 
 type userRepo struct {
@@ -62,4 +63,12 @@ func (u *userRepo) Upsert(user *models.User) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (u *userRepo) DeleteUser(user *models.User) (bool, error) {
+	err := u.db.Delete(user).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

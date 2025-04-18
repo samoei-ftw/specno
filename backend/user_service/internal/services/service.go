@@ -10,6 +10,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
+
 type UserService struct {
 	repo repo.UserRepository
 }
@@ -17,24 +18,21 @@ type UserService struct {
 func NewUserService(repo repo.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
-// Fetches a user by their email.
+
 func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
-    user, err := s.repo.GetUserByEmail(email)
-    if err != nil {
-        return nil, err
-    }
-    return user, nil
+	user, err := s.repo.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-// RegisterUser handles user registration.
 func (s *UserService) RegisterUser(email, password string) (uint, error) {
-	// Check if user already exists
 	existingUser, _ := s.repo.GetUserByEmail(email)
 	if existingUser != nil {
 		return 0, errors.New("user already exists")
 	}
 
-	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, errors.New("failed to hash password")
@@ -43,8 +41,8 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 	user := models.User{
 		Email:    email,
 		Password: string(hashedPassword),
+		Role:     "user",
 	}
-	user.Role = "user"
 	userID, err := s.repo.Create(&user)
 	if err != nil {
 		log.Println("Error saving user to DB:", err)
@@ -52,6 +50,19 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 	}
 
 	return userID, nil
+}
+
+func (s *UserService) AuthenticateUser(email, password string) (*models.User, error) {
+	user, err := s.repo.GetUserByEmail(email)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, errors.New("invalid password")
+	}
+
+	return user, nil
 }
 
 func (s *UserService) GetUserByID(userID int) (*models.User, error) {
@@ -74,7 +85,7 @@ func (s *UserService) UpsertUser(upsertUser dto.UpsertUser) (*models.User, error
 			user = existingUser
 		}
 	}
-	// TODO: validation
+
 	if upsertUser.Email != nil {
 		user.Email = *upsertUser.Email
 	}
@@ -87,5 +98,25 @@ func (s *UserService) UpsertUser(upsertUser dto.UpsertUser) (*models.User, error
 	}
 
 	return s.repo.Upsert(user)
+}
 
+func (s *UserService) DeleteUser(userId int, loggedIn int) (bool, error) {
+	userToDelete, err := s.repo.GetUserByID(userId)
+	if err != nil {
+		return false, errors.New("user to delete not found")
+	}
+	currentUser, err := s.repo.GetUserByID(loggedIn)
+	if err != nil {
+		return false, err
+	}
+
+	if currentUser.Role != "admin" {
+		return false, errors.New("unauthorized: only admins can delete users")
+	}
+	isDeleted, err := s.repo.DeleteUser(userToDelete)
+	if err != nil {
+		return false, errors.New("failed to delete user")
+	}
+
+	return isDeleted, nil
 }
