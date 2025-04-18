@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/samoei-ftw/specno/backend/common/utils"
 	service "github.com/samoei-ftw/specno/backend/project_service/internal/service"
-	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 )
 func GetProjectOwnerHandler(service *service.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +35,7 @@ func GetProjectOwnerHandler(service *service.ProjectService) http.HandlerFunc {
 			})
 			return
 		}
-		claims, ok := r.Context().Value(auth.ClaimsKey).(*auth.Claims)
+		claims, ok := r.Context().Value(utils.ClaimsKey).(*utils.Claims)
 		if !ok || claims == nil {
 			utils.RespondWithJSON(w, http.StatusUnauthorized, utils.Response{
 				Status:  "error",

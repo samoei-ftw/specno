@@ -11,74 +11,7 @@ import (
 	utils "github.com/samoei-ftw/specno/backend/common/utils"
 	dto "github.com/samoei-ftw/specno/backend/user_service/internal/models"
 	"github.com/samoei-ftw/specno/backend/user_service/internal/services"
-
-	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
-
-	"golang.org/x/crypto/bcrypt"
 )
-
-func RegisterHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
-	var userReqisterRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&userReqisterRequest); err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-
-	if userReqisterRequest.Email == "" || userReqisterRequest.Password == "" {
-		utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Email and password are required")
-		return
-	}
-
-	userID, err := service.RegisterUser(userReqisterRequest.Email, userReqisterRequest.Password)
-	if err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusInternalServerError, "Registration failed")
-		return
-	}
-	utils.RespondWithSuccess(w, http.StatusCreated, map[string]interface{}{
-		"id":      userID,
-		"message": "User registered successfully",
-	})
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
-	var dto struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
-
-	user, err := service.GetUserByEmail(dto.Email)
-	if err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusUnauthorized, "User not found")
-		return
-	}
-
-	// Validate password
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(dto.Password))
-	if err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusUnauthorized, "Invalid password")
-		return
-	}
-	token, err := auth.GenerateToken(int(user.ID)) // TODO: add role as arg
-	if err != nil {
-		utils.RespondWithErrorMessage(w, http.StatusInternalServerError, "Failed to generate token")
-		return
-	}
-
-	// Return token
-	utils.RespondWithSuccess(w, http.StatusOK, map[string]interface{}{
-		"token":  token,
-		"role":   user.Role,
-		"user_id": int(user.ID),
-	})
-}
 
 func FetchUserHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
 	vars := mux.Vars(r)

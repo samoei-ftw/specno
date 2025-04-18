@@ -18,7 +18,6 @@ import (
 	internal "github.com/samoei-ftw/specno/backend/project_service/internal/handlers"
 	repo "github.com/samoei-ftw/specno/backend/project_service/internal/repository"
 	service "github.com/samoei-ftw/specno/backend/project_service/internal/service"
-	auth "github.com/samoei-ftw/specno/backend/user_service/pkg"
 )
 
 func main() {
@@ -45,7 +44,7 @@ func main() {
 
 	r.HandleFunc("/users/{user_id}/projects", internal.ListProjectHandler(projectService)).Methods("GET")
 	r.HandleFunc("/projects/{id}", internal.GetProjectHandler(projectService)).Methods("GET")
-	r.Handle("/projects/{project_id}/ownership", auth.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET") // TODO: remove
+	r.Handle("/projects/{project_id}/ownership", utils.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET") // TODO: remove
 	
 	// Use cors middleware
 	c := cors.New(cors.Options{
