@@ -40,11 +40,11 @@ func main() {
 	// Setup router
 	r := mux.NewRouter()
 	r.HandleFunc("/projects", internal.CreateProjectHandler(projectService)).Methods("POST")
-	r.HandleFunc("/projects/{id}", internal.GetProjectHandler(projectService)).Methods("GET")
 	r.HandleFunc("/projects/{id}", internal.UpdateProjectHandler(projectService)).Methods("PUT")
 	r.HandleFunc("/projects/{id}", internal.DeleteProjectHandler(projectService)).Methods("DELETE")
 
-	r.HandleFunc("/projects/{user_id}", internal.ListProjectHandler(projectService)).Methods("GET") // TODO: rename for user
+	r.HandleFunc("/users/{user_id}/projects", internal.ListProjectHandler(projectService)).Methods("GET")
+	r.HandleFunc("/projects/{id}", internal.GetProjectHandler(projectService)).Methods("GET")
 	r.Handle("/projects/{project_id}/ownership", auth.JWTMiddleware(internal.GetProjectOwnerHandler(projectService))).Methods("GET") // TODO: remove
 	
 	// Use cors middleware
