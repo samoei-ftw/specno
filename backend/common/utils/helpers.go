@@ -15,3 +15,8 @@ func ParseID(r *http.Request) (int, error) {
 	}
 	return strconv.Atoi(idString)
 }
+
+// dereferences a uint pointer
+func UintPtr(i uint) *uint{
+	return &i
+}

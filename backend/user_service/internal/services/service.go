@@ -64,9 +64,6 @@ func (s *UserService) GetUserByID(userID int) (*models.User, error) {
 
 func (s *UserService) UpsertUser(upsertUser dto.UpsertUser) (*models.User, error) {
 	user := &models.User{}
-	if upsertUser.UserID == nil {
-		return nil, errors.New("user ID is required for update")
-	}
 	if upsertUser.UserID != nil {
 		existingUser, err := s.repo.GetUserByID(int(*upsertUser.UserID))
 		if err != nil {

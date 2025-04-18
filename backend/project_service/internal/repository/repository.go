@@ -25,7 +25,7 @@ func (r *projectRepo) Create(project *common.Project) error {
 
 func (r *projectRepo) GetByUserID(userID uint) ([]common.Project, error) {
 	if r.db == nil {
-		return nil, errors.New("DB connection error in fetch user.")
+		return nil, errors.New("DB connection not initialized")
 	}
 
 	var projects []common.Project

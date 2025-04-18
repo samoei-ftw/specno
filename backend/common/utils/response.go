@@ -22,9 +22,19 @@ type GetOwnerResponse struct {
 	IsOwner  bool      `json:"is_owner"`
 }
 
-// Return formatted JSON response
-func RespondWithJSON(w http.ResponseWriter, statusCode int, response Response) {
+
+func RespondWithJSON(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(payload)
+}
+
+func RespondWithErrorMessage(w http.ResponseWriter, code int, message string) {
+	RespondWithJSON(w, code, map[string]interface{}{
+		"message": message,
+	})
+}
+
+func RespondWithSuccess(w http.ResponseWriter, code int, data interface{}) {
+	RespondWithJSON(w, code, data)
 }

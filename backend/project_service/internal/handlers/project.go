@@ -8,6 +8,8 @@ package internal
 
 import (
 	"encoding/json"
+	"log"
+
 	//"log"
 	"net/http"
 	"strconv"
@@ -30,79 +32,54 @@ func CreateProjectHandler(service *service.ProjectService) http.HandlerFunc {
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&projectCreateRequest); err != nil {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Invalid request payload",
-			})
+			utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Invalid request payload")
 			return
 		}
+		log.Printf("project request user id: %d", projectCreateRequest.UserID)
 
 		if projectCreateRequest.Name == "" || projectCreateRequest.Description == "" || projectCreateRequest.UserID == 0 {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Project name and valid user ID are required",
-			})
+			utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Project name and valid user ID are required")
 			return
 		}
 
 		project, err := service.CreateProject(projectCreateRequest.Name, projectCreateRequest.Description, projectCreateRequest.UserID)
 		if err != nil {
 			if err.Error() == "user not found" {
-				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
-					Status:  "error",
-					Message: "User not found",
-				})
+				utils.RespondWithErrorMessage(w, http.StatusNotFound, "User not found")
 				return
 			}
-			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-				Status:  "error",
-				Message: "Failed to create project",
-			})
+			utils.RespondWithErrorMessage(w, http.StatusInternalServerError, "Failed to create project")
 			return
 		}
 
-		utils.RespondWithJSON(w, http.StatusCreated, utils.Response{
-			Status: "success",
-			Data:   project,
+		utils.RespondWithSuccess(w, http.StatusCreated, map[string]interface{}{
+			"id":      project.ID,
+			"message": "Project created successfully",
 		})
 	}
 }
 
 func ListProjectHandler(service *service.ProjectService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		vars := mux.Vars(r)
-		userIdStr := vars["user_id"]
-
+		userIdStr := mux.Vars(r)["user_id"]
 		userId, err := strconv.Atoi(userIdStr)
-		if err != nil {
-			utils.RespondWithJSON(w, http.StatusBadRequest, utils.Response{
-				Status:  "error",
-				Message: "Invalid user ID",
-			})
+		if err != nil || userId <= 0 {
+			utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Invalid or missing user ID")
 			return
 		}
 
 		projects, err := service.ListProjects(uint(userId))
 		if err != nil {
-			if err.Error() == "user not found" {
-				utils.RespondWithJSON(w, http.StatusNotFound, utils.Response{
-					Status:  "error",
-					Message: "User not found",
-				})
-				return
-			}
-
-			utils.RespondWithJSON(w, http.StatusInternalServerError, utils.Response{
-				Status:  "error",
-				Message: "Failed to retrieve projects",
-			})
+			status := http.StatusInternalServerError
+			/**if errors.Is(err, service.ErrUserNotFound) {
+				status = http.StatusNotFound
+			}*/ //TODO
+			utils.RespondWithErrorMessage(w, status, err.Error())
 			return
 		}
 
-		utils.RespondWithJSON(w, http.StatusOK, utils.Response{
-			Status: "success",
-			Data:   projects,
+		utils.RespondWithSuccess(w, http.StatusOK, map[string]interface{}{
+			"projects": projects,
 		})
 	}
 }

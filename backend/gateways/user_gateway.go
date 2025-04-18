@@ -36,23 +36,22 @@ func UserGatewayInit() *UserGateway {
 	}
 }
 
-func (g *UserGateway) GetUserByID(userID uint) (*models.User, error) {
+func (g *UserGateway) ValidateUserId(userID uint) (bool, error) {
 	url := fmt.Sprintf("%s/users/%d", g.BaseURL, userID)
 
 	resp, err := g.HTTPClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Gateway error: %w", err)
+		return false, fmt.Errorf("Gateway error: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("User service returned status: %d", resp.StatusCode)
+		return false, fmt.Errorf("User service returned status: %d", resp.StatusCode)
 	}
 
-	var user models.User
-	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
-		return nil, fmt.Errorf("Error interpreting response: %w", err)
+	var userResponse models.UserResponse
+	if err := json.NewDecoder(resp.Body).Decode(&userResponse); err != nil {
+		return false, fmt.Errorf("Error interpreting response: %w", err)
 	}
-
-	return &user, nil
+	return true, nil
 }

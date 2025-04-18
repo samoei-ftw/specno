@@ -7,7 +7,7 @@ import (
 	common "github.com/samoei-ftw/specno/backend/common/models"
 	"github.com/samoei-ftw/specno/backend/gateways"
 	interfaces "github.com/samoei-ftw/specno/backend/project_service/internal/interfaces"
-	models "github.com/samoei-ftw/specno/backend/project_service/internal/models"
+	internal "github.com/samoei-ftw/specno/backend/project_service/internal/models"
 )
 type ProjectService struct {
 	repo interfaces.Repository
@@ -18,9 +18,10 @@ func NewProjectService(repo interfaces.Repository) *ProjectService {
 }
 // Creates a project for a user
 func (s *ProjectService) CreateProject(name, description string, userId uint) (*common.Project, error) {
+	log.Printf("Requested userId: %d", userId)
 	// Validate user
-	user, err := userGateway.GetUserByID(userId)
-	if err != nil {
+	userExists, err := userGateway.ValidateUserId(userId)
+	if !userExists || err != nil {
 		log.Printf("Error fetching user %d: %v", userId, err)
 		if err.Error() == "user not found" {
 			return nil, errors.New("user not found")
@@ -31,7 +32,7 @@ func (s *ProjectService) CreateProject(name, description string, userId uint) (*
 	project := &common.Project{
 		Name:        name,
 		Description: description,
-		UserID:      user.ID,
+		UserID:      userId,
 	}
 
 	if err := s.repo.Create(project); err != nil {
@@ -42,30 +43,30 @@ func (s *ProjectService) CreateProject(name, description string, userId uint) (*
 	return project, nil
 }
 
-// Lists all projects for a user
 func (s *ProjectService) ListProjects(userId uint) ([]*common.Project, error) {
-	// Validate user exists
-	user, err := userGateway.GetUserByID(userId)
-	if err != nil {
-		log.Printf("Error fetching user %d: %v", userId, err)
-		if err.Error() == "user not found" {
-			return nil, errors.New("user not found")
-		}
-		return nil, errors.New("failed to retrieve user")
-	}
-
-	projectList, err := s.repo.GetByUserID(user.ID)
+	projects, err := s.repo.GetByUserID(userId)
 	if err != nil {
 		log.Printf("Error fetching projects for user %d: %v", userId, err)
-		return nil, errors.New("failed to retrieve projects")
+		return nil, err
 	}
 
-	projects := make([]*common.Project, len(projectList))
-	for i, p := range projectList {
-		projects[i] = &p
+	if len(projects) == 0 {
+		// validate user exists
+		userExists, err := userGateway.ValidateUserId(userId)
+		if err != nil {
+			log.Printf("User validation failed: %v", err)
+			return nil, errors.New("Not found")
+		}
+		_ = userExists
 	}
 
-	return projects, nil
+	// Convert to []*common.Project
+	projectPtrs := make([]*common.Project, len(projects))
+	for i := range projects {
+		projectPtrs[i] = &projects[i]
+	}
+
+	return projectPtrs, nil
 }
 
 func (s *ProjectService) GetProject(projectId uint) (*common.Project, error) {
@@ -87,7 +88,7 @@ func (s *ProjectService) GetUserForProject(projectId uint, bearer string) (uint,
 }
 
 // UpdateProject updates the project with the given ID
-func (s *ProjectService) UpdateProject(projectId int, request models.ProjectUpdateRequest) (*common.Project, error) {
+func (s *ProjectService) UpdateProject(projectId int, request internal.ProjectUpdateRequest) (*common.Project, error) {
 	project, err := s.repo.GetProjectById(uint(projectId))
 	if err != nil {
 		return nil, err
