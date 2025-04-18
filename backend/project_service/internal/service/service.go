@@ -20,21 +20,21 @@ func NewProjectService(repo interfaces.Repository) *ProjectService {
 func (s *ProjectService) CreateProject(name, description string, userId uint) (*common.Project, error) {
 	log.Printf("Requested userId: %d", userId)
 	// Validate user
-	userExists, err := userGateway.ValidateUserId(userId)
-	if !userExists || err != nil {
-		log.Printf("Error fetching user %d: %v", userId, err)
-		if err.Error() == "user not found" {
-			return nil, errors.New("user not found")
+	userExists, hasPermissions, err := userGateway.ValidateUserId(userId)
+	if!userExists ||  !hasPermissions {
+		if (err != nil){
+			if err.Error() == "user not found" {
+				return nil, errors.New("user not found")
+			}
 		}
-		return nil, errors.New("failed to retrieve user")
-	}
-
+		return nil, errors.New("no permissions")
+		}
+	
 	project := &common.Project{
 		Name:        name,
 		Description: description,
 		UserID:      userId,
 	}
-
 	if err := s.repo.Create(project); err != nil {
 		log.Printf("Error creating project: %v", err)
 		return nil, errors.New("failed to create project")
@@ -51,16 +51,13 @@ func (s *ProjectService) ListProjects(userId uint) ([]*common.Project, error) {
 	}
 
 	if len(projects) == 0 {
-		// validate user exists
-		userExists, err := userGateway.ValidateUserId(userId)
-		if err != nil {
-			log.Printf("User validation failed: %v", err)
-			return nil, errors.New("Not found")
+		// validate user exists and role is allowed
+		userExists, hasPermissions, err := userGateway.ValidateUserId(userId)
+		if err != nil || !userExists || !hasPermissions {
+			log.Printf("User validation failed for user %d: %v", userId, err)
+			return nil, errors.New("not found")
 		}
-		_ = userExists
 	}
-
-	// Convert to []*common.Project
 	projectPtrs := make([]*common.Project, len(projects))
 	for i := range projects {
 		projectPtrs[i] = &projects[i]
