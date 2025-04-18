@@ -20,12 +20,10 @@ func init() {
 		log.Fatal("JWT_SECRET not set in environment variables")
 	}
 	jwtKey = []byte(secret)
-}
-
+}	
 type contextKey string
 
 const ClaimsKey contextKey = "claims"
-
 type Claims struct {
 	UserID int `json:"user_id"`
 	jwt.RegisteredClaims
@@ -42,7 +40,6 @@ func GenerateToken(userID int) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-// returns its claims of parsed jwt string
 func ParseJWT(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -81,7 +78,6 @@ func ValidateToken(tokenStr string) (bool, error) {
 	return true, nil
 }
 
-// checks the token and injects the claims into request context
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenStr, err := ExtractTokenFromHeader(r)

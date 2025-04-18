@@ -43,7 +43,6 @@ func (s *UserService) RegisterUser(email, password string) (uint, error) {
 		Password: string(hashedPassword),
 		Role:     "user",
 	}
-
 	userID, err := s.repo.Create(&user)
 	if err != nil {
 		log.Println("Error saving user to DB:", err)
