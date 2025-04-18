@@ -83,7 +83,6 @@ func PatchUserHandler(w http.ResponseWriter, r *http.Request, service *services.
 	})
 }
 
-// Delete a user
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request, service *services.UserService) {
 	vars := mux.Vars(r)
 	userIDString, exists := vars["id"]
@@ -92,23 +91,28 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request, service *services
 		return
 	}
 
-	// Convert userID to int
 	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
 		utils.RespondWithErrorMessage(w, http.StatusBadRequest, "Invalid User ID")
 		return
 	}
-
-	// Fetch user from the service layer
-	user, err := service.GetUserByID(userID)
+	claims, ok := r.Context().Value(utils.ClaimsKey).(*utils.Claims)
+	if !ok {
+		utils.RespondWithErrorMessage(w, http.StatusUnauthorized, "User not authorized")
+		return
+	}
+	isDeleted, err := service.DeleteUser(userID, claims.UserID)
 	if err != nil {
-		log.Printf("Error fetching user %d: %v", userID, err)
+		log.Printf("Error deleting user %d: %v", userID, err)
 		if err.Error() == "user not found" {
 			utils.RespondWithErrorMessage(w, http.StatusNotFound, "User not found")
+			return
+		} else if err.Error() == "unauthorized: only admins can delete users" {
+			utils.RespondWithErrorMessage(w, http.StatusForbidden, "Forbidden: Only admins can delete users")
 			return
 		}
 		utils.RespondWithErrorMessage(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
-	utils.RespondWithSuccess(w, http.StatusOK, user)
+	utils.RespondWithSuccess(w, http.StatusOK, map[string]bool{"deleted": isDeleted})
 }

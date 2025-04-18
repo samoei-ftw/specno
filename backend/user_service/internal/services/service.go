@@ -100,3 +100,24 @@ func (s *UserService) UpsertUser(upsertUser dto.UpsertUser) (*models.User, error
 
 	return s.repo.Upsert(user)
 }
+
+func (s *UserService) DeleteUser(userId int, loggedIn int) (bool, error) {
+	userToDelete, err := s.repo.GetUserByID(userId)
+	if err != nil {
+		return false, errors.New("user to delete not found")
+	}
+	currentUser, err := s.repo.GetUserByID(loggedIn)
+	if err != nil {
+		return false, err
+	}
+
+	if currentUser.Role != "admin" {
+		return false, errors.New("unauthorized: only admins can delete users")
+	}
+	isDeleted, err := s.repo.DeleteUser(userToDelete)
+	if err != nil {
+		return false, errors.New("failed to delete user")
+	}
+
+	return isDeleted, nil
+}
